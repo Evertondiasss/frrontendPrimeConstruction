@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menu Principal - Prime Construções</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/frontend/css/menu.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <!-- Elementos decorativos -->
+    <div class="dots"></div>
+    <div class="decoration shape-1"></div>
+    <div class="decoration shape-2"></div>
+    <div class="decoration shape-3"></div>
+    <div class="decoration shape-4"></div>
+
+    <div class="container">
+        <!-- Cabeçalho -->
+        <header class="header">
+            <div class="user-welcome">
+                <h1>Olá, <span id="userName">Usuário</span>!</h1>
+                <p class="welcome-text">Bem-vindo ao seu painel</p>
+            </div>
+        </header>
+
+        <!-- Menu de Opções -->
+        <section class="menu-options">
+            <h2>Opções Principais</h2>
+            <div class="options-grid">
+                <a href="dashboard.html" class="option-card">
+                    <i class="fas fa-chart-line"></i>
+                    <h3>Dashboard</h3>
+                    <p>Visualize estatísticas</p>
+                </a>
+                <a href="form.html" class="option-card">
+                    <i class="fas fa-shopping-cart"></i>
+                    <h3>Nova Compra</h3>
+                    <p>Registre vendas</p>
+                </a>
+                <a href="clientes.html" class="option-card">
+                    <i class="fas fa-users"></i>
+                    <h3>Clientes</h3>
+                    <p>Gerencie clientes</p>
+                </a>
+                <a href="funcionarios.html" class="option-card">
+                    <i class="fas fa-user-tie"></i>
+                    <h3>Funcionários</h3>
+                    <p>Gerencie equipe</p>
+                </a>
+                <a href="categorias.html" class="option-card">
+                    <i class="fas fa-tags"></i>
+                    <h3>Categorias</h3>
+                    <p>Organize produtos</p>
+                </a>
+                <a href="produtos.html" class="option-card">
+                    <i class="fas fa-box"></i>
+                    <h3>Produtos</h3>
+                    <p>Gerencie estoque</p>
+                </a>
+            </div>
+        </section>
+
+        <!-- Menu de Navegação Inferior -->
+        <nav class="bottom-nav">
+            <a href="dashboard.html" class="nav-item">
+                <i class="fas fa-home"></i>
+                <span>Início</span>
+            </a>
+            <a href="#" id="logoutBtn" class="nav-item">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Sair</span>
+            </a>
+        </nav>
+    </div>
+    <script src="/frontend/js/menu.js"></script>
+</body>
+</html> 

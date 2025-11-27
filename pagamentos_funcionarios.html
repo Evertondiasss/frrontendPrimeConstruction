@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Pagamentos de Funcionários - Prime Construções</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"/>
+  <link rel="stylesheet" href="/frontend/css/form.css"/>
+  <link rel="stylesheet" href="/frontend/css/pagamentos_funcionarios.css"/>
+</head>
+<body>
+  <div class="container">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <h1>Formulário Prime</h1>
+      <nav>
+        <a href="/frontend/form.html" class="menu-item"><i class="fas fa-home"></i><span>Início</span></a>
+        <a href="/frontend/dashboard.html" class="menu-item"><i class="fas fa-chart-line"></i><span>Dashboard</span></a>
+        <a href="/frontend/obras.html" class="menu-item"><i class="fas fa-building"></i><span>Cadastro de Obras</span></a>
+        <a href="/frontend/recebimentos_obra.html" class="menu-item"><i class="fas fa-hand-holding-usd"></i><span>Recebimentos de Obras</span></a>
+        <a href="/frontend/fornecedores.html" class="menu-item"><i class="fas fa-industry"></i><span>Cadastro de Fornecedores</span></a>
+        <a href="/frontend/funcionarios.html" class="menu-item"><i class="fas fa-user-tie"></i><span>Cadastro de Funcionários</span></a>
+        <a href="/frontend/categorias.html" class="menu-item"><i class="fas fa-layer-group"></i><span>Cadastro de Categoria</span></a>
+        <a href="/frontend/produtos.html" class="menu-item"><i class="fas fa-tags"></i><span>Cadastro de Produtos</span></a>
+        <a href="/frontend/encargos.html" class="menu-item"><i class="fas fa-file-invoice"></i><span>Pagamento de Encargos</span></a>
+        <a href="/frontend/pagamentos_funcionarios.html" class="menu-item"><i class="fas fa-wallet"></i><span>Pagamento de Funcionários</span></a>
+        <a href="/frontend/analisar_compras.html" class="menu-item"><i class="fas fa-box"></i><span>Análise de Compras</span></a>
+      </nav>
+    </aside>
+
+    <!-- Conteúdo principal -->
+    <main class="main-content">
+      <div class="form-container">
+        <h2>Registro de Pagamento de Funcionário</h2>
+
+        <form id="pagamentoForm" autocomplete="off">
+          <!-- Funcionário -->
+          <div class="form-group">
+            <label for="nomeSelect">Nome do Funcionário</label>
+            <select id="nomeSelect" class="form-control" required>
+              <option value="">Selecione um funcionário</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="cpfFuncionario">CPF</label>
+            <input type="text" id="cpfFuncionario" class="form-control" readonly />
+          </div>
+
+          <div class="form-group">
+            <label for="cargoFuncionario">Cargo</label>
+            <input type="text" id="cargoFuncionario" class="form-control" readonly />
+          </div>
+
+          <!-- Competência -->
+          <div class="form-group">
+            <label for="competencia">Competência</label>
+            <input type="date" id="competencia" class="form-control" required />
+          </div>
+
+          <!-- Horas Extras -->
+          <div class="form-group" id="blocoHorasExtras" style="border:1px solid #eee; padding:1rem; border-radius:.5rem; background:#fcfcfc;">
+            <div style="display:flex; align-items:center; gap:.5rem; justify-content:space-between;">
+              <h3 style="margin:0; font-size:1.05rem;">Horas Extras deste pagamento</h3>
+              <button type="button" id="btnAddExtra" class="btn-submit" style="padding:.35rem .7rem;">+ Adicionar linha</button>
+            </div>
+
+            <div id="extrasContainer" style="margin-top:.75rem; display:grid; gap:.5rem;"><!-- linhas dinâmicas --></div>
+
+            <div style="display:flex; justify-content:flex-end; gap:1rem; margin-top:.75rem;">
+              <div><b>Total de Horas:</b> <span id="extrasHorasTotal">0.00</span> h</div>
+              <div><b>Total de Extras:</b> R$ <span id="extrasValorTotal">0,00</span></div>
+            </div>
+            <small class="hint">Você pode adicionar várias linhas de horas extras, cada uma vinculada a uma obra.</small>
+          </div>
+
+        
+          <!-- Pagamento -->
+          <div class="form-group">
+            <label for="dataPagamento">Data do Pagamento</label>
+            <input type="date" id="dataPagamento" class="form-control" required />
+          </div>
+
+          <div class="form-group">
+            <label for="valorPagamento">Valor (R$)</label>
+            <input type="number" id="valorPagamento" class="form-control" step="0.01" min="0" placeholder="Ex: 2500.00" required />
+          </div>
+
+          <div class="form-group">
+            <label for="comprovantePagamento">Comprovante (PDF/JPG/PNG)</label>
+            <input type="file" id="comprovantePagamento" name="comprovante" class="form-control" accept=".pdf,.png,.jpg,.jpeg" />
+            <small class="hint">Até 10 MB. Opcional.</small>
+          </div>
+
+          <button type="submit" class="btn-submit">Registrar Pagamento</button>
+        </form>
+
+        <hr style="margin: 2rem 0;" />
+
+        <div style="display:flex; align-items:center; gap:.75rem; margin-bottom:.5rem;">
+          <h3 style="margin:0;">Pagamentos Registrados</h3>
+          <button id="atualizarLinks" type="button" class="btn-submit" style="padding:.4rem .75rem;">Atualizar links</button>
+        </div>
+
+        <ul id="listaPagamentos" class="form-control" style="list-style:none; padding-left:1rem; background:#fdfdfd;">
+          <li>Carregando...</li>
+        </ul>
+      </div>
+    </main>
+  </div>
+
+  <script src="/frontend/js/pagamentos_funcionarios.js"></script>
+</body>
+</html>

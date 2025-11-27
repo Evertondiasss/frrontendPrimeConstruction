@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Cadastro de Obras - Prime Construções</title>
+
+  <!-- Fontes / ícones -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"/>
+
+  <!-- Estilos do projeto -->
+  <link rel="stylesheet" href="/frontend/css/form.css"/>
+  <link rel="stylesheet" href="/frontend/css/obras.css"/>
+</head>
+<body>
+  <div class="container">
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <h1>Formulário Prime</h1>
+      <nav>
+        <a href="/frontend/form.html" class="menu-item"><i class="fas fa-home"></i><span>Início</span></a>
+        <a href="/frontend/dashboard.html" class="menu-item"><i class="fas fa-chart-line"></i><span>Dashboard</span></a>
+        <a href="/frontend/obras.html" class="menu-item"><i class="fas fa-building"></i><span>Cadastro de Obras</span></a>
+        <a href="/frontend/recebimentos_obra.html" class="menu-item"><i class="fas fa-hand-holding-usd"></i><span>Recebimentos de Obras</span></a>
+        <a href="/frontend/fornecedores.html" class="menu-item"><i class="fas fa-industry"></i><span>Cadastro de Fornecedores</span></a>
+        <a href="/frontend/funcionarios.html" class="menu-item"><i class="fas fa-user-tie"></i><span>Cadastro de Funcionários</span></a>
+        <a href="/frontend/categorias.html" class="menu-item"><i class="fas fa-layer-group"></i><span>Cadastro de Categoria</span></a>
+        <a href="/frontend/produtos.html" class="menu-item"><i class="fas fa-tags"></i><span>Cadastro de Produtos</span></a>
+        <a href="/frontend/encargos.html" class="menu-item"><i class="fas fa-file-invoice"></i><span>Pagamento de Encargos</span></a>
+        <a href="/frontend/pagamentos_funcionarios.html" class="menu-item"><i class="fas fa-wallet"></i><span>Pagamento de Funcionários</span></a>
+        <a href="/frontend/analisar_compras.html" class="menu-item"><i class="fas fa-box"></i><span>Análise de Compras</span></a>
+      </nav>
+    </div>
+
+    <!-- Conteúdo principal -->
+    <div class="main-content">
+      <div class="form-container">
+        <h2>Cadastro de Obras</h2>
+
+        <form id="obraForm" autocomplete="off">
+          <div class="form-group">
+            <label for="nomeObra">Nome da Obra</label>
+            <input type="text" id="nomeObra" class="form-control" placeholder="Ex: Residencial Jardim - Torre A" required />
+          </div>
+
+          <div class="form-group">
+            <label for="enderecoObra">Endereço</label>
+            <input type="text" id="enderecoObra" class="form-control" placeholder="Rua/Av., nº, bairro, cidade/UF, CEP" required />
+          </div>
+
+          <div class="form-group">
+            <label for="dataInicioObra">Data de Início</label>
+            <input type="date" id="dataInicioObra" class="form-control" required />
+          </div>
+
+          <div class="form-group">
+            <label for="dataPrevistaObra">Data Prevista</label>
+            <input type="date" id="dataPrevistaObra" class="form-control" required />
+          </div>
+
+          <div class="form-group">
+            <label for="responsavelSelect">Responsável</label>
+            <select id="responsavelSelect" class="form-control" required>
+              <option value="">Selecione o responsável</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="orcamentoEstimado">Orçamento Estimado (R$)</label>
+            <input type="number" id="orcamentoEstimado" class="form-control" step="0.01" min="0" placeholder="Ex: 150000" required />
+          </div>
+
+          <div class="form-group">
+            <label for="ValorContratual">Valor Contratual (R$)</label>
+            <input type="number" id="ValorContratual" class="form-control" step="0.01" min="0" placeholder="Ex: 150000" required />
+          </div>
+
+          <button type="submit" class="btn-submit">Cadastrar Obra</button>
+        </form>
+
+        <hr style="margin: 2rem 0;" />
+
+        <h3 style="margin-bottom: 1rem;">Obras Cadastradas</h3>
+        <!-- container de cards -->
+        <div id="listaObras" class="data-list">
+          <div class="state">Carregando...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de ação (única) -->
+  <div id="actionModal" class="modal-backdrop" hidden>
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <h3 id="modalTitle">Confirmar ação</h3>
+      <p id="modalDesc" class="modal-desc">Deseja realmente executar esta ação?</p>
+
+      <div class="form-group">
+        <label for="modalMotivo">Observações / Motivo (opcional)</label>
+        <textarea id="modalMotivo" class="form-control" rows="3" placeholder="Descreva o motivo..."></textarea>
+      </div>
+
+      <div class="modal-actions">
+        <button id="modalCancel" type="button" class="btn-secondary">Voltar</button>
+        <button id="modalConfirm" type="button" class="btn-submit">Confirmar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de detalhes (card clicável) -->
+  <div id="viewModal" class="modal-backdrop" hidden>
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="viewTitle">
+      <h3 id="viewTitle" class="mb-2">Detalhes da obra</h3>
+      <div id="viewBody" class="muted" style="display:grid;gap:.5rem;"></div>
+      <div class="modal-actions">
+        <button id="viewClose" type="button" class="btn btn-primary">Fechar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Editar valores -->
+<div id="editValuesModal" class="modal-backdrop" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="editValuesTitle">
+    <h3 id="editValuesTitle" class="mb-2">Editar valores da obra</h3>
+
+    <div class="form-group">
+      <label for="editOrcamento">Orçamento Estimado (R$)</label>
+      <input type="number" id="editOrcamento" class="form-control" step="0.01" min="0" placeholder="Ex: 150000" />
+    </div>
+
+    <div class="form-group">
+      <label for="editValorContratual">Valor Contratual (R$)</label>
+      <input type="number" id="editValorContratual" class="form-control" step="0.01" min="0" placeholder="Ex: 150000" />
+    </div>
+
+    <div class="modal-actions">
+      <button id="editValuesCancel" type="button" class="btn-secondary">Voltar</button>
+      <button id="editValuesSave" type="button" class="btn-submit">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Alterar Status -->
+<div id="statusModal" class="modal-backdrop" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="statusTitle">
+    <h3 id="statusTitle" class="mb-2">Alterar status da obra</h3>
+
+    <div class="form-group">
+      <label for="statusSelect">Novo status</label>
+      <select id="statusSelect" class="form-control">
+        <option value="ativa">Ativa</option>
+        <option value="pausada">Pausada</option>
+        <option value="concluida">Concluída</option>
+        <option value="cancelada">Cancelada</option>
+      </select>
+    </div>
+
+    <div class="form-group" id="statusMotivoGroup" style="display:none;">
+      <label for="statusMotivo">Motivo (opcional)</label>
+      <textarea id="statusMotivo" class="form-control" rows="3" placeholder="Descreva o motivo..."></textarea>
+    </div>
+
+    <div class="modal-actions">
+      <button id="statusCancel" type="button" class="btn-secondary">Voltar</button>
+      <button id="statusSave" type="button" class="btn-submit">Salvar</button>
+    </div>
+  </div>
+</div>
+
+
+  <script src="/frontend/js/obras.js"></script>
+</body>
+</html>

@@ -1,0 +1,40 @@
+@import url('form.css');
+
+.menu-item.active {
+  background: rgba(255, 255, 255, 0.25);
+  font-weight: bold;
+  border-left: 4px solid white;
+}
+
+input[readonly] {
+  background-color: #f5f5f5;
+  color: #555;
+}
+
+.hint {
+  display: block;
+  font-size: 0.85rem;
+  color: #666;
+  margin-top: 0.25rem;
+}
+
+#listaPagamentos a {
+  text-decoration: underline;
+}
+
+/* Overrides/usage of shared history styles from form.css */
+#listaPagamentos.history { background: transparent; border: 0; }
+
+/* pagamentos_funcionarios.css (complemento opcional) */
+.extra-row .btn-remove-extra{
+  background:#fff;
+  border:1px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor:pointer;
+}
+.extra-row .btn-remove-extra:hover{
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+

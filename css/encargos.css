@@ -1,0 +1,114 @@
+
+/* ===== CAMPOS ESPECÍFICOS DE ENCARGOS ===== */
+input[type="number"],
+input[type="file"] {
+  font-size: 1rem;
+}
+
+input[type="number"]::placeholder {
+  color: #aaa;
+  font-size: 0.95rem;
+}
+
+/* Campo valor (R$) com alinhamento à direita */
+.form-control.valor {
+  text-align: right;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+}
+
+/* Input de arquivo (comprovante) */
+input[type="file"] {
+  border: 2px dashed var(--border-strong);
+  border-radius: var(--border-radius);
+  background: #fff;
+  padding: 0.8rem;
+  transition: var(--transition);
+}
+input[type="file"]:hover {
+  border-color: var(--primary-light);
+  background: #f9fbff;
+}
+
+/* ===== LISTA DE PAGAMENTOS ===== */
+#listaPagamentos {
+  margin-top: 2rem;
+  border-top: 2px solid var(--border-strong);
+  padding-top: 1.5rem;
+}
+
+#listaPagamentos a {
+  text-decoration: underline;
+  color: var(--primary-dark);
+}
+#listaPagamentos a:hover {
+  text-decoration: none;
+}
+
+#listaPagamentos ul {
+  list-style: none;
+  padding: 0;
+  margin: 0.75rem 0;
+}
+
+#listaPagamentos li {
+  background: #fff;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--border-radius);
+  padding: 0.75rem 1rem;
+  margin-bottom: 0.75rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition);
+}
+
+#listaPagamentos li:hover {
+  background: #f9fafc;
+  transform: translateY(-2px);
+}
+
+/* Valor e data destacados */
+.pagamento-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+.pagamento-valor {
+  color: var(--primary-dark);
+  font-weight: 600;
+  font-size: 1rem;
+}
+.pagamento-data {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+/* Botões de ação (editar, excluir) */
+.pagamento-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+.pagamento-actions button {
+  border: 0;
+  padding: 0.4rem 0.8rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: var(--transition);
+}
+.btn-edit {
+  background: #eef6ff;
+  color: var(--primary-dark);
+}
+.btn-edit:hover {
+  background: #e1f0ff;
+}
+.btn-delete {
+  background: #ffecec;
+  color: var(--danger);
+}
+.btn-delete:hover {
+  background: #ffd9d9;
+}

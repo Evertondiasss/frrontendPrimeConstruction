@@ -1,0 +1,148 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Poppins", sans-serif;
+}
+
+body {
+  background: linear-gradient(135deg, #eef2f3, #dfe9f3);
+  min-height: 100vh;
+  padding: 2rem;
+  color: #333;
+}
+
+header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+header h1 {
+  font-size: 1.8rem;
+  color: #004aad;
+}
+
+header p {
+  font-size: 0.95rem;
+  color: #666;
+}
+
+#stats {
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+}
+
+.stat-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
+  padding: 1rem 1.5rem;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  min-width: 230px;
+}
+
+.stat-card i {
+  font-size: 1.8rem;
+}
+
+.stat-card h3 {
+  margin-bottom: 0.2rem;
+}
+
+.stat-card.blue i { color: #007bff; }
+.stat-card.green i { color: #28a745; }
+.stat-card.orange i { color: #ff9800; }
+
+.compras-container {
+  max-width: 950px;
+  margin: 0 auto;
+}
+
+.compra-card {
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 15px;
+  padding: 1.2rem 1.5rem;
+  box-shadow: 0 5px 10px rgba(0,0,0,0.08);
+  margin-bottom: 1.2rem;
+  border-left: 6px solid #007bff;
+  transition: all .3s;
+}
+
+.compra-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+}
+
+.compra-card.parcelada {
+  border-left-color: #ff9800;
+}
+
+.compra-card.avista {
+  border-left-color: #28a745;
+}
+
+.compra-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.compra-header h3 {
+  color: #333;
+  font-size: 1.1rem;
+}
+
+.compra-header span {
+  font-size: 0.9rem;
+  color: #777;
+}
+
+.compra-body {
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+  color: #555;
+}
+
+.parcelas {
+  margin-top: 1rem;
+  border-top: 1px solid #eee;
+  padding-top: .8rem;
+}
+
+.parcela-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: .4rem 0;
+  font-size: 0.9rem;
+  border-bottom: 1px dashed #eee;
+}
+
+.parcela-item.pago span {
+  color: #28a745;
+}
+
+.parcela-item button {
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: .3rem .8rem;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.parcela-item button:hover {
+  background: #0056b3;
+}
+
+.loading {
+  text-align: center;
+  color: #777;
+}

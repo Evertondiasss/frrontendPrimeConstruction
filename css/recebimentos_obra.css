@@ -1,0 +1,107 @@
+@import url('form.css');
+
+/* ====== Menu ativo ====== */
+.menu-item.active{
+  background: rgba(255,255,255,.25);
+  font-weight:600;
+  border-left:4px solid #fff;
+}
+
+/* ====== Lista ====== */
+#listaRecebimentos{
+  display:grid;
+  gap:1rem;
+  margin-top:1.5rem;
+}
+
+/* ---- Card (compatível com o que o JS gera: .history-card) ---- */
+.history-card{
+  background:#fff;
+  border:1px solid var(--border-strong);
+  border-radius:var(--border-radius);
+  padding:1rem 1.25rem;
+  box-shadow:var(--shadow-sm);
+  transition:var(--transition);
+}
+.history-card:hover{
+  box-shadow:var(--shadow);
+  transform:translateY(-2px);
+}
+
+/* Cabeçalho do card */
+.history-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:.75rem;
+  margin-bottom:.5rem;
+}
+.history-id{
+  color:var(--text-muted);
+  font-size:.85rem;
+}
+.history-title{
+  font-weight:600;
+  color:var(--text-dark);
+  font-size:1rem;
+}
+
+/* Ações (botões) */
+.history-actions{
+  display:flex;
+  gap:.4rem;
+  align-items:center;
+}
+.icon-btn{
+  width:34px;height:34px;
+  display:inline-flex;align-items:center;justify-content:center;
+  border-radius:var(--radius-sm);
+  border:1px solid var(--border);
+  background:#fff;color:#555;cursor:pointer;
+  transition:var(--transition);
+}
+.icon-btn:hover{ transform:scale(1.08); }
+.icon-btn.act-view:hover{ color:var(--primary-color); border-color:var(--primary-color); }
+.icon-btn.act-delete:hover{ color:var(--danger); border-color:var(--danger); }
+
+/* Meta (chips) */
+.history-meta{
+  display:flex;flex-wrap:wrap;gap:.5rem;margin:.25rem 0 .25rem;
+  font-size:.9rem;
+}
+.chip{
+  display:inline-flex;align-items:center;gap:.35rem;
+  background:var(--chip-bg); color:#374151;
+  border-radius:999px; padding:.25rem .6rem;
+  border:1px solid var(--border);
+}
+.link{ color:var(--success); font-weight:600; }
+.link:hover{ text-decoration:underline; }
+
+/* Subtexto/observações */
+.history-sub{
+  color:var(--text-muted);
+  font-size:.9rem;
+  margin-top:.35rem;
+}
+
+/* ====== Estados e carregamento ====== */
+#listaRecebimentos .state{
+  text-align:center;color:var(--text-muted);
+  font-size:.95rem;padding:1rem;
+}
+.skel.card{
+  background:linear-gradient(90deg,#f6f7f8 25%,#edeef1 50%,#f6f7f8 75%);
+  background-size:400% 100%;
+  border-radius:var(--border-radius);
+  height:78px;animation:shimmer 1.4s infinite;
+}
+@keyframes shimmer{
+  0%{background-position:-400% 0}
+  100%{background-position:400% 0}
+}
+
+/* ====== Pequenos toques no formulário ====== */
+.form-container h2{ margin-bottom:.75rem; }
+.form-group + .form-group{ margin-top:.9rem; }
+.btn-submit{ width:100%; }

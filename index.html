@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Painel de Login</title>
+  <link rel="stylesheet" href="css/login.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+</head>
+<body>
+  <div class="container">
+
+    <!-- LADO ESQUERDO -->
+    <div class="left-side">
+      <div class="shapes">
+        <div class="shape shape1"></div>
+        <div class="shape shape2"></div>
+        <div class="shape shape3"></div>
+        <div class="line line1"></div>
+        <div class="line line2"></div>
+      </div>
+      <img src="assets/logo-prime.png" alt="Logo" class="logo-login">
+      <div class="welcome-text">
+        <h1>Bem-vindo de volta!</h1>
+        <p>Acesse sua conta para continuar</p>
+      </div>
+    </div>
+
+    <!-- LADO DIREITO -->
+    <div class="right-side">
+      <div class="login-container">
+        <h2>Login</h2>
+
+        <div class="input-group">
+          <i class="fas fa-user"></i>
+          <input type="text" id="login" placeholder="Usuário" required>
+        </div>
+
+        <div class="input-group">
+          <i class="fas fa-lock"></i>
+          <input type="password" id="senha" placeholder="Senha" required>
+        </div>
+
+        <button class="login-button" onclick="fazerLogin()">Entrar</button>
+
+        <div class="mensagem" id="mensagem"></div>
+
+        <div class="social-media">
+          <p class="instagram-handle">
+            <i class="fab fa-instagram"></i> @primeconstrucoes_
+          </p>
+        </div>
+
+        <div class="register">
+          <button class="register-button">Criar conta</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    async function fazerLogin() {
+      const login = document.getElementById('login').value.trim();
+      const senha = document.getElementById('senha').value.trim();
+      const msg = document.getElementById('mensagem');
+
+      if (!login || !senha) {
+        msg.textContent = "Preencha todos os campos.";
+        msg.style.color = "red";
+        return;
+      }
+
+      try {
+        const resposta = await fetch('https://backendprimeconstruction-production.up.railway.app/api/login', {
+
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username: login, password: senha })
+        });
+
+
+        const dados = await resposta.json();
+
+        if (resposta.ok) {
+            // salva o nome do usuário pra usar nas outras telas
+            localStorage.setItem("nomeUsuario", dados.nome || dados.login);
+
+            // redireciona pro painel
+            window.location.href = "form.html";
+        } else {
+            msg.textContent = dados.mensagem || "Erro ao fazer login.";
+            msg.style.color = "red";
+        }
+
+
+      } catch (erro) {
+        msg.textContent = "Erro de conexão com o servidor.";
+        msg.style.color = "red";
+      }
+    }
+  </script>
+</body>
+</html>

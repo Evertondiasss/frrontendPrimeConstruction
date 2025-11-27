@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Encargos - Prime Construções</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"/>
+  <link rel="stylesheet" href="/frontend/css/form.css"/>
+  <link rel="stylesheet" href="/frontend/css/encargos.css"/>
+</head>
+<body>
+  <div class="container">
+    <div class="sidebar">
+      <h1>Formulário Prime</h1>
+      <nav>
+        <a href="/frontend/form.html" class="menu-item"><i class="fas fa-home"></i><span>Início</span></a>
+        <a href="/frontend/dashboard.html" class="menu-item"><i class="fas fa-chart-line"></i><span>Dashboard</span></a>
+        <a href="/frontend/obras.html" class="menu-item"><i class="fas fa-building"></i><span>Cadastro de Obras</span></a>
+        <a href="/frontend/recebimentos_obra.html" class="menu-item"><i class="fas fa-hand-holding-usd"></i><span>Recebimentos de Obras</span></a>
+        <a href="/frontend/fornecedores.html" class="menu-item"><i class="fas fa-industry"></i><span>Cadastro de Fornecedores</span></a>
+        <a href="/frontend/funcionarios.html" class="menu-item"><i class="fas fa-user-tie"></i><span>Cadastro de Funcionários</span></a>
+        <a href="/frontend/categorias.html" class="menu-item"><i class="fas fa-layer-group"></i><span>Cadastro de Categoria</span></a>
+        <a href="/frontend/produtos.html" class="menu-item"><i class="fas fa-tags"></i><span>Cadastro de Produtos</span></a>
+        <a href="/frontend/encargos.html" class="menu-item"><i class="fas fa-file-invoice"></i><span>Pagamento de Encargos</span></a>
+        <a href="/frontend/pagamentos_funcionarios.html" class="menu-item"><i class="fas fa-wallet"></i><span>Pagamento de Funcionários</span></a>
+        <a href="/frontend/analisar_compras.html" class="menu-item"><i class="fas fa-box"></i><span>Análise de Compras</span></a>
+      </nav>
+    </div>
+
+    <div class="main-content">
+      <div class="form-container">
+        <h2>Registro de Encargo</h2>
+
+        <form id="encargoForm" autocomplete="off">
+          <!-- Obra -->
+          <div class="form-group">
+            <label for="obraSelect">Obra</label>
+            <select id="obraSelect" class="form-control" required>
+              <option value="">Selecione a Obra</option>
+            </select>
+          </div>
+
+          <!-- Tipo de Encargo -->
+          <div class="form-group">
+            <label for="tipoEncargo">Tipo</label>
+            <select id="tipoEncargo" class="form-control" required>
+              <option value="">Selecione o tipo</option>
+              <option value="FGTS">FGTS</option>
+              <option value="INSS">INSS</option>
+              <option value="Encargo Direto">Encargo Direto</option>
+              <option value="Encargo Indireto">Encargo Indireto</option>
+              <option value="Outros">Outros</option>
+            </select>
+          </div>
+
+          <!-- Valor -->
+          <div class="form-group">
+            <label for="valorEncargo">Valor (R$)</label>
+            <input type="number" id="valorEncargo" class="form-control" step="0.01" min="0" placeholder="Ex: 1250.00" required />
+          </div>
+
+          <!-- Comprovante -->
+          <div class="form-group">
+            <label for="comprovanteEncargo">Comprovante (PDF/JPG/PNG)</label>
+            <input type="file" id="comprovanteEncargo" name="comprovante" class="form-control" accept=".pdf,.png,.jpg,.jpeg" />
+            <small class="hint">Até 10 MB. Opcional.</small>
+          </div>
+
+          <button type="submit" class="btn-submit">Registrar Encargo</button>
+        </form>
+
+        <hr style="margin: 2rem 0;" />
+
+        <div style="display:flex; align-items:center; gap:.75rem; margin-bottom:.5rem;">
+          <h3 style="margin:0;">Encargos Registrados</h3>
+          <button id="atualizarEncargos" type="button" class="btn-submit" style="padding:.4rem .75rem;">Atualizar</button>
+        </div>
+
+        <ul id="listaEncargos" class="form-control" style="list-style:none; padding-left:1rem; background:#fdfdfd;">
+          <li>Carregando...</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <script src="/frontend/js/encargos.js"></script>
+</body>
+</html>

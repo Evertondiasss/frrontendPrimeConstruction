@@ -1,0 +1,223 @@
+@import url('form.css');
+
+/* --- largura confortável do conteúdo --- */
+.main-content { max-width: 1100px; margin: 0 auto; }
+
+/* --- menu --- */
+.menu-item.active {
+  background: rgba(255, 255, 255, 0.25);
+  font-weight: bold;
+  border-left: 4px solid white;
+}
+
+/* ===================== */
+/* LISTA (grid responsivo) */
+/* ===================== */
+.data-list{
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 18px;
+  align-items: stretch;
+}
+
+/* ===================== */
+/* CARD                   */
+/* ===================== */
+.data-card{
+  display: grid;
+  grid-template-columns: 40px 1fr;
+  gap: 12px;
+  align-items: start;
+  padding: 16px;
+  border: 1px solid #e6edf5;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 2px 6px rgba(0,0,0,.04);
+  cursor: pointer;
+  transition: box-shadow .15s, transform .05s;
+  overflow: hidden;
+  position: relative;   /* necessário por causa das ações absolutas */
+}
+
+.data-card:hover{ box-shadow: 0 6px 16px rgba(0,0,0,.08); }
+.data-card:active{ transform: translateY(1px); }
+.data-card:focus{
+  outline: 3px solid rgba(0,145,211,.25);
+  outline-offset: 2px;
+}
+
+/* avatar à esquerda */
+.data-card .avatar{
+  width: 40px; height: 40px;
+  border-radius: 10px;
+  background: #e6f0fb;
+  display: grid; place-items: center;
+  color: #0a66c2;
+  flex: 0 0 40px;
+}
+
+/* textos do meio */
+.data-card .title{
+  font-weight: 600;
+  line-height: 1.2;
+  margin-bottom: 2px;
+  white-space: normal;
+  overflow: hidden;
+  text-overflow: break-word;               /* corta nomes longos */
+}
+.data-card .subtitle{
+  color: #667085;
+  font-size: .9rem;
+  margin-bottom: .5rem;
+  display: -webkit-box;                  /* duas linhas no endereço */
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.data-card .meta{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* ===================== */
+/* BADGES                 */
+/* ===================== */
+.badge{
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  font-size: .82rem;
+  border-radius: 999px;
+  background: #f3f4f6;
+  color: #344054;
+  white-space: normal;
+  line-height: 1.25;
+}
+
+/* status (cores específicas) */
+.badge[data-status="ativa"]     { background:#eaf8ee; color:#157f3b; }
+.badge[data-status="pausada"]   { background:#fff5e6; color:#a15c00; }
+.badge[data-status="concluida"] { background:#eaf3ff; color:#0b66c3; }
+.badge[data-status="cancelada"] { background:#ffecec; color:#b42318; }
+
+/* ===================== */
+/* AÇÕES (lado direito)   */
+/* ===================== */
+.data-card .actions{
+  display: flex;
+  gap: 8px;
+  align-items: start;
+  cursor: default;                        /* não “rouba” o cursor do card */
+}
+.icon-btn{
+  width: 34px; height: 34px;
+  display: inline-flex; align-items:center; justify-content:center;
+  border: 1px solid #e6edf5;
+  border-radius: 10px;
+  background: #f8fbff;
+  color: #344054;
+  cursor: pointer;
+  transition: transform .06s ease, background .15s ease, border-color .15s ease;
+}
+.icon-btn:hover{ background:#eef6ff; border-color:#dbe1e8; transform: translateY(-1px); }
+.icon-btn:active{ transform: translateY(0); }
+
+/* ===================== */
+/* ESTADOS / SKELETON     */
+/* ===================== */
+.skel.card{
+  height: 120px; border-radius: 12px;
+  background: linear-gradient(90deg,#f1f5f9 25%,#eef2f7 37%,#f1f5f9 63%);
+  background-size: 400% 100%; animation: sh 1.2s ease-in-out infinite;
+}
+@keyframes sh{0%{background-position:100% 50%}100%{background-position:0 50%}}
+.state{ color:#667085; padding: 12px; }
+
+/* ===================== */
+/* MODAL (ação/detalhes)  */
+/* ===================== */
+.modal-backdrop{
+  position: fixed; inset: 0;
+  display: grid; place-items: center;
+  background: rgba(2,18,38,.45);
+  z-index: 1000;
+}
+.modal-backdrop[hidden]{ display: none !important; }
+body.modal-open{ overflow: hidden; }
+
+.modal{
+  width: min(560px, 92vw);
+  background: #fff; border-radius: 14px; padding: 1rem 1.25rem;
+  box-shadow: 0 10px 30px rgba(0,0,0,.25);
+}
+.modal .modal-actions{
+  margin-top: 1rem; display: flex; gap: .75rem; justify-content: flex-end;
+}
+.btn{ padding: .75rem 1rem; border-radius: 10px; border: 0; cursor: pointer; }
+.btn-light{ background: #eef2f7; }
+.btn-primary{ background: #0b76b7; color: #fff; }
+
+/* ===================== */
+/* RESPONSIVO             */
+/* ===================== */
+@media (max-width: 640px){
+  .data-card{
+    grid-template-columns: 36px 1fr;
+    grid-template-areas:
+      "avatar title"
+      "avatar subtitle"
+      "avatar meta"
+      "actions actions";
+  }
+  .actions{ grid-area: actions; margin-top: 10px; }
+}
+
+/* botão principal ocupar 100% */
+.btn-submit{ width: 100%; }
+
+/* ======= BOTÕES DE AÇÃO (visuais e responsivos) ======= */
+
+.data-card {
+  position: relative;
+  overflow: visible !important; /* garante que nada seja cortado */
+}
+
+.data-card .actions {
+  display: flex;
+  gap: 0.4rem;
+  position: absolute;
+  top: 0.6rem;
+  right: 0.6rem;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.data-card:hover .actions,
+.data-card:focus-within .actions {
+  opacity: 1; /* aparece apenas ao passar o mouse ou focar o card */
+}
+
+.data-card .icon-btn {
+  background: #f3f3f3;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 8px;
+  cursor: pointer;
+  color: #444;
+  transition: background 0.2s ease;
+}
+
+.data-card .icon-btn:hover {
+  background: #e6e6e6;
+  color: #000;
+}
+
+.badge.tap {
+  cursor: pointer;
+  user-select: none;
+}
+.badge.tap:active {
+  transform: scale(0.98);
+}

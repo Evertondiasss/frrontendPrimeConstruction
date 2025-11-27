@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Cadastro de Fornecedores - Prime Construções</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"/>
+  <link rel="stylesheet" href="/frontend/css/form.css"/>
+  <link rel="stylesheet" href="/frontend/css/fornecedores.css"/>
+</head>
+<body>
+  <div class="container">
+    <div class="sidebar">
+      <h1>Formulário Prime</h1>
+      <nav>
+        <a href="/frontend/form.html" class="menu-item"><i class="fas fa-home"></i><span>Início</span></a>
+        <a href="/frontend/dashboard.html" class="menu-item"><i class="fas fa-chart-line"></i><span>Dashboard</span></a>
+        <a href="/frontend/obras.html" class="menu-item"><i class="fas fa-building"></i><span>Cadastro de Obras</span></a>
+        <a href="/frontend/recebimentos_obra.html" class="menu-item"><i class="fas fa-hand-holding-usd"></i><span>Recebimentos de Obras</span></a>
+        <a href="/frontend/fornecedores.html" class="menu-item"><i class="fas fa-industry"></i><span>Cadastro de Fornecedores</span></a>
+        <a href="/frontend/funcionarios.html" class="menu-item"><i class="fas fa-user-tie"></i><span>Cadastro de Funcionários</span></a>
+        <a href="/frontend/categorias.html" class="menu-item"><i class="fas fa-layer-group"></i><span>Cadastro de Categoria</span></a>
+        <a href="/frontend/produtos.html" class="menu-item"><i class="fas fa-tags"></i><span>Cadastro de Produtos</span></a>
+        <a href="/frontend/encargos.html" class="menu-item"><i class="fas fa-file-invoice"></i><span>Pagamento de Encargos</span></a>
+        <a href="/frontend/pagamentos_funcionarios.html" class="menu-item"><i class="fas fa-wallet"></i><span>Pagamento de Funcionários</span></a>
+        <a href="/frontend/analisar_compras.html" class="menu-item"><i class="fas fa-box"></i><span>Análise de Compras</span></a>
+      </nav>
+    </div>
+
+    <div class="main-content">
+      <div class="form-container">
+        <h2>Cadastro de Fornecedores</h2>
+
+        <form id="fornecedorForm" autocomplete="off">
+          <div class="form-group">
+            <label for="nomeFornecedor">Nome do Fornecedor</label>
+            <input type="text" id="nomeFornecedor" class="form-control" placeholder="Ex: Construmax Materiais" required />
+          </div>
+
+          <div class="form-group">
+            <label for="cnpjFornecedor">CNPJ</label>
+            <input type="text" id="cnpjFornecedor" class="form-control" placeholder="00.000.000/0000-00" />
+          </div>
+
+          <div class="form-group">
+            <label for="enderecoFornecedor">Endereço</label>
+            <input type="text" id="enderecoFornecedor" class="form-control" placeholder="Rua/Av., nº, bairro, cidade/UF, CEP" />
+          </div>
+
+          <div class="form-group">
+            <label for="telefoneFornecedor">Telefone</label>
+            <input type="tel" id="telefoneFornecedor" class="form-control" placeholder="(99) 99999-9999" />
+          </div>
+
+          <button type="submit" class="btn-submit">Cadastrar Fornecedor</button>
+        </form>
+
+        <hr style="margin: 2rem 0;" />
+
+        <h3 style="margin-bottom: 1rem;">Fornecedores Cadastrados</h3>
+
+        <!-- Lista em cards, igual obras -->
+        <div id="listaFornecedores" class="data-list">
+          <div class="state">Carregando...</div>
+        </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/frontend/js/fornecedores.js"></script>
+</body>
+</html>

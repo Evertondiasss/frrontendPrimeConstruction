@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Formulário de Compra - Prime Construções</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"/>
+  <link rel="stylesheet" href="/frontend/css/form.css"/>
+</head>
+<body>
+  <div class="container">
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <div id="saudacao" class="saudacao"></div>
+      <nav>
+        <a href="/frontend/form.html" class="menu-item"><i class="fas fa-home"></i><span>Início</span></a>
+        <a href="/frontend/dashboard.html" class="menu-item"><i class="fas fa-chart-line"></i><span>Dashboard</span></a>
+        <a href="/frontend/obras.html" class="menu-item"><i class="fas fa-building"></i><span>Cadastro de Obras</span></a>
+        <a href="/frontend/recebimentos_obra.html" class="menu-item"><i class="fas fa-hand-holding-usd"></i><span>Recebimentos de Obras</span></a>
+        <a href="/frontend/fornecedores.html" class="menu-item"><i class="fas fa-industry"></i><span>Cadastro de Fornecedores</span></a>
+        <a href="/frontend/funcionarios.html" class="menu-item"><i class="fas fa-user-tie"></i><span>Cadastro de Funcionários</span></a>
+        <a href="/frontend/categorias.html" class="menu-item"><i class="fas fa-layer-group"></i><span>Cadastro de Categoria</span></a>
+        <a href="/frontend/produtos.html" class="menu-item"><i class="fas fa-tags"></i><span>Cadastro de Produtos</span></a>
+        <a href="/frontend/encargos.html" class="menu-item"><i class="fas fa-file-invoice"></i><span>Pagamento de Encargos</span></a>
+        <a href="/frontend/pagamentos_funcionarios.html" class="menu-item"><i class="fas fa-wallet"></i><span>Pagamento de Funcionários</span></a>
+        <a href="/frontend/analisar_compras.html" class="menu-item"><i class="fas fa-box"></i><span>Análise de Compras</span></a>
+      </nav>
+    </div>
+
+    <!-- Conteúdo principal -->
+    <div class="main-content">
+      <div class="form-container">
+        <h2>Formulário de Compra</h2>
+
+        <form id="purchaseForm" autocomplete="off" enctype="multipart/form-data">
+          <!-- Linha 1 -->
+          <div class="row">
+            <div class="col">
+              <div class="form-group">
+                <label>Obra</label>
+                <select class="form-control" id="obra" required>
+                  <option value="">Selecione a obra</option>
+                </select>
+              </div>
+            </div>
+            <div class="col">
+              <div class="form-group">
+                <label>Fornecedor</label>
+                <select class="form-control" id="fornecedor" required>
+                  <option value="">Selecione o fornecedor</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Linha 2 -->
+          <div class="row">
+            <div class="col">
+              <div class="form-group">
+                <label>Funcionário</label>
+                <select class="form-control" id="funcionario" required>
+                  <option value="">Selecione o funcionário</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="col">
+              <div class="form-group">
+                <label>Data da Compra</label>
+                <input type="date" class="form-control" id="dataCompra" required/>
+              </div>
+            </div>
+          </div>
+
+          <!-- ===== ITENS DA COMPRA (N ITENS) ===== -->
+          <div class="form-group" style="margin-top: .5rem;">
+            <label style="display:flex;align-items:center;justify-content:space-between;">
+              <span>Itens da Nota / Pedido</span>
+              <button type="button" id="addItemBtn" class="btn-secondary" style="padding:.6rem 1rem;">
+                <i class="fa-solid fa-plus"></i> Adicionar item
+              </button>
+            </label>
+
+            <div class="form-control" style="padding:0;">
+              <table style="width:100%; border-collapse:collapse;">
+                <thead>
+                  <tr style="background:#f7fafc;">
+                    <th style="text-align:left; padding:.75rem 1rem; border-bottom:1px solid #e6ecf3; width:50%;">Produto</th>
+                    <th style="text-align:left; padding:.75rem 1rem; border-bottom:1px solid #e6ecf3; width:18%;">Quantidade</th>
+                    <th style="text-align:left; padding:.75rem 1rem; border-bottom:1px solid #e6ecf3; width:22%;">Valor (R$)</th>
+                    <th style="padding:.75rem 1rem; border-bottom:1px solid #e6ecf3; width:40px;"></th>
+                  </tr>
+                </thead>
+                <tbody id="itensTable">
+                  <!-- linhas dinâmicas via JS -->
+                </tbody>
+                <tfoot>
+                  <tr>
+                    <td colspan="2" style="padding:.8rem 1rem; border-top:1px solid #eef2f6; text-align:right; font-weight:600;">
+                      Subtotal
+                    </td>
+                    <td style="padding:.8rem 1rem; border-top:1px solid #eef2f6; text-align:right;">
+                      <span id="subtotalTxt">R$ 0,00</span>
+                    </td>
+                    <td></td>
+                  </tr>
+                  <tr>
+                    <td colspan="2" style="padding:.4rem 1rem; text-align:right; font-weight:600;">
+                      Desconto Geral
+                    </td>
+                    <td style="padding:.4rem 1rem; text-align:right;">
+                      <input id="descontoTotal" type="text" class="form-control" placeholder="R$ 0,00" style="text-align:right;"/>
+                    </td>
+                    <td></td>
+                  </tr>
+                  <tr>
+                    <td colspan="2" style="padding:.9rem 1rem; border-top:1px dashed #e5e9f0; text-align:right; font-weight:700; font-size:1.05rem;">
+                      Total da Compra
+                    </td>
+                    <td style="padding:.9rem 1rem; border-top:1px dashed #e5e9f0; text-align:right; font-weight:700; font-size:1.05rem;">
+                      <span id="totalFinal">R$ 0,00</span>
+                    </td>
+                    <td></td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+
+            <!-- template de linha (para JS clonar) -->
+            <template id="itemRowTemplate">
+              <tr>
+                <td style="padding:.6rem 1rem;">
+                  <select class="form-control item-produto">
+                    <option value="">Selecione o produto</option>
+                  </select>
+                </td>
+                <td style="padding:.6rem 1rem;">
+                  <input type="number" step="0.001" min="0" class="form-control item-qtd" placeholder="0,000" />
+                </td>
+                <td style="padding:.6rem 1rem;">
+                  <input type="text" class="form-control item-valor" placeholder="R$ 0,00" />
+                </td>
+                <td style="padding:.6rem .6rem; text-align:center;">
+                  <button type="button" class="icon-btn item-remove" title="Remover">
+                    <i class="fa-solid fa-trash-can"></i>
+                  </button>
+                </td>
+              </tr>
+            </template>
+          </div>
+
+          <!-- Linha 4 -->
+          <div class="row">
+            <div class="col">
+              <div class="form-group">
+                <label>Forma de Pagamento</label>
+                <select class="form-control" id="formaPagamento" required>
+                  <option value="">Selecione a forma de pagamento</option>
+                  <option value="dinheiro">Dinheiro</option>
+                  <option value="pix">PIX</option>
+                  <option value="cartao">Cartão</option>
+                  <option value="boleto">Boleto</option>
+                </select>
+              </div>
+            </div>
+            <div class="col">
+              <div class="form-group">
+                <label>Número de Parcelas</label>
+                <input type="number" class="form-control" id="parcelas" min="1" max="12" value="1" required/>
+              </div>
+            </div>
+          </div>
+
+          <!-- Linha 5 -->
+          <div class="row">
+            <div class="col">
+              <div class="form-group">
+                <label>Data de Vencimento</label>
+                <input type="date" class="form-control" id="dataVencimento" required/>
+              </div>
+            </div>
+
+            <div class="col">
+              <div class="form-group">
+                <label>Comprovante da Compra (PDF, PNG, JPG)</label>
+
+                <!-- estado inicial -->
+                <div id="uIdle" class="uploader-idle">
+                  <i class="fa-solid fa-cloud-arrow-up"></i>
+                  <span>Upload aqui</span>
+                  <button id="btnPickIdle" type="button" class="u-btn">Arquivo</button>
+                  <small>PDF, PNG, JPG • até 10 MB</small>
+                </div>
+
+                <!-- estado com arquivo -->
+                <div id="uploadBox" class="uploader" hidden>
+                  <i class="fa-solid fa-cloud-arrow-up"></i>
+                  <div class="u-file">
+                    <small id="uFileName">Selecionar arquivo</small>
+                    <small id="uFileSize" class="file-info"></small>
+                  </div>
+                  <div class="u-actions">
+                    <button id="btnPick" type="button">Escolher</button>
+                    <button id="btnRemove" type="button" class="btn-remove" title="Remover">&times;</button>
+                  </div>
+                  <span id="uBadge" class="u-badge"></span>
+                  <input id="fileInput" type="file" accept=".pdf,.png,.jpg,.jpeg" hidden>
+                </div>
+
+                <!-- barra fina (carregando) -->
+                <div id="uProgress" class="u-progress" hidden>
+                  <div id="uBar" class="u-bar"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Observações</label>
+            <textarea id="observacoes" class="form-control" rows="2" placeholder="Informações adicionais sobre a compra (opcional)..."></textarea>
+          </div>
+
+          <button type="submit" class="btn-submit">Registrar Compra</button>
+        </form>
+
+        <hr style="margin: 2rem 0;" />
+        <h3>Compras Registradas</h3>
+
+        <div class="compras-container">
+          <table id="tabelaCompras" class="compras-tabela">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Obra</th>
+                <th>Data da Compra</th>
+                <th>Itens</th>
+              </tr>
+            </thead>
+            <tbody id="listaCompras">
+              <tr><td colspan="4" style="text-align:center;">Carregando...</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Modal de Detalhes -->
+        <div id="modalCompra" class="modal-backdrop" hidden>
+          <div class="modal" style="max-width: 600px;">
+            <h3>Detalhes da Compra</h3>
+            <div id="modalCompraConteudo"></div>
+            <div class="modal-actions">
+              <button type="button" class="btn-secondary" id="fecharModalCompra">Fechar</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Modal: Novo Fornecedor -->
+        <div id="modalFornecedor" class="modal-backdrop" hidden>
+          <div class="modal">
+            <h3>Novo fornecedor</h3>
+            <p class="modal-desc">Preencha os dados mínimos para cadastrar rapidamente.</p>
+
+            <div class="form-group">
+              <label>Nome</label>
+              <input id="nf_nome" type="text" class="form-control" placeholder="Ex: Construmax" />
+            </div>
+            <div class="form-group">
+              <label>CNPJ</label>
+              <input id="nf_cnpj" type="text" class="form-control" placeholder="00.000.000/0000-00" />
+            </div>
+            <div class="form-group">
+              <label>Telefone</label>
+              <input id="nf_tel" type="tel" class="form-control" placeholder="(99) 99999-9999" />
+            </div>
+            <div class="form-group">
+              <label>Endereço</label>
+              <input id="nf_end" type="text" class="form-control" placeholder="Rua/Av., nº, bairro, cidade/UF, CEP" />
+            </div>
+
+            <div class="modal-actions">
+              <button type="button" class="btn-secondary" id="nf_cancel">Cancelar</button>
+              <button type="button" class="btn-submit" id="nf_save">Cadastrar</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Modal: Novo Produto -->
+        <div id="modalProduto" class="modal-backdrop" hidden>
+          <div class="modal">
+            <h3>Novo produto</h3>
+            <p class="modal-desc">Informe nome e categoria.</p>
+
+            <div class="form-group">
+              <label>Nome</label>
+              <input id="np_nome" type="text" class="form-control" placeholder="Ex: Cimento CP2" />
+            </div>
+            <div class="form-group">
+              <label>Categoria</label>
+              <select id="np_categoria" class="form-control">
+                <option value="">Carregando categorias...</option>
+              </select>
+            </div>
+
+            <div class="modal-actions">
+              <button type="button" class="btn-secondary" id="np_cancel">Cancelar</button>
+              <button type="button" class="btn-submit" id="np_save">Cadastrar</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const usuario = localStorage.getItem('nomeUsuario') || 'Usuário';
+    const hora = new Date().getHours();
+    let saudacao = 'Olá';
+    if (hora < 12) saudacao = 'Bom dia';
+    else if (hora < 18) saudacao = 'Boa tarde';
+    else saudacao = 'Boa noite';
+
+    const versiculos = [
+      "O Senhor é meu pastor; nada me faltará. (Salmos 23:1)",
+      "Tudo posso naquele que me fortalece. (Filipenses 4:13)",
+      "Confia no Senhor de todo o teu coração. (Provérbios 3:5)",
+      "O choro pode durar uma noite, mas a alegria vem pela manhã. (Salmos 30:5)",
+      "Porque Deus é o que opera em vós tanto o querer como o efetuar. (Filipenses 2:13)",
+
+      "Ora, a fé é o firme fundamento das coisas que se esperam, e a prova das coisas que se não veem. (Hebreus 11:1)",
+      "Porque andamos por fé, e não por vista. (2 Coríntios 5:7)",
+      "Sem fé é impossível agradar a Deus. (Hebreus 11:6)",
+
+      "O Senhor é a minha luz e a minha salvação; a quem temerei? (Salmos 27:1)",
+      "Mas os que esperam no Senhor renovarão as suas forças; subirão com asas como águias. (Isaías 40:31)",
+      "O Senhor é bom, é fortaleza no dia da angústia. (Naum 1:7)",
+
+      "Não temas, porque eu sou contigo; não te assombres, porque eu sou o teu Deus. (Isaías 41:10)",
+      "Esforça-te, e tem bom ânimo; não temas, nem te espantes, porque o Senhor teu Deus é contigo. (Josué 1:9)",
+      "O Senhor pelejará por vós, e vos calareis. (Êxodo 14:14)",
+      "Não se turbe o vosso coração; credes em Deus, crede também em mim. (João 14:1)",
+      
+
+      // As obras não salvam
+      "Porque pela graça sois salvos, por meio da fé; e isto não vem de vós, é dom de Deus. (Efésios 2:8)",
+      "Não vem das obras, para que ninguém se glorie. (Efésios 2:9)",
+      "Sabendo que o homem não é justificado pelas obras da lei, mas pela fé em Jesus Cristo. (Gálatas 2:16)",
+      "Porque todos pecaram e destituídos estão da glória de Deus. (Romanos 3:23)",
+
+      // Esperança e confiança
+      "Lançando sobre ele toda a vossa ansiedade, porque ele tem cuidado de vós. (1 Pedro 5:7)",
+      "Entrega o teu caminho ao Senhor; confia nele, e ele o fará. (Salmos 37:5)",
+      "Em paz me deito e logo pego no sono, porque só tu, Senhor, me fazes habitar em segurança. (Salmos 4:8)",
+      "O Senhor é a minha força e o meu cântico; ele se tornou a minha salvação. (Salmos 118:14)",
+      "Clama a mim, e responder-te-ei, e anunciar-te-ei coisas grandes e firmes que não sabes. (Jeremias 33:3)"
+    ];
+
+
+    const versiculo = versiculos[Math.floor(Math.random() * versiculos.length)];
+
+    document.getElementById('saudacao').innerHTML = `
+      <h2 style="font-size: 18px; font-weight: 700; margin-bottom: 6px;">
+        ${saudacao}, ${usuario}!
+      </h2>
+      <p style="font-size: 15px; text-indent: 0px; line-height: 1.4;">
+        ${versiculo}
+      </p>
+    `;
+
+</script>
+
+
+  <script src="/frontend/js/form.js"></script>
+</body>
+</html>

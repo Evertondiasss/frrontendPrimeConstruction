@@ -1,0 +1,111 @@
+@import url('form.css');
+
+/* rota ativa */
+.menu-item.active {
+  background: rgba(255, 255, 255, 0.25);
+  font-weight: bold;
+  border-left: 4px solid white;
+}
+
+/* header da lista */
+.list-header{
+  display:flex; align-items:center; justify-content:space-between;
+  gap:1rem; margin-bottom:.5rem;
+}
+
+/* grid responsivo de cards */
+.data-list{
+  display:grid;
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+  gap: 1rem;
+}
+@media (min-width: 720px){
+  .data-list{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (min-width: 1140px){
+  .data-list{ grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+/* states */
+.state{
+  padding:.85rem 1rem;
+  background:#f1f5f9;
+  border:1px dashed #e2e8f0;
+  border-radius:10px;
+  color:#475569;
+}
+
+/* card base */
+.data-card{
+  display:grid;
+  grid-template-columns:auto 1fr auto; /* avatar | conteúdo | ações */
+  gap:1rem;
+  align-items:start;
+
+  padding:1rem;
+  border:1px solid #e6edf5;
+  border-radius:12px;
+  background:#fff;
+  box-shadow:0 2px 6px rgba(0,0,0,.04);
+
+  transition: box-shadow .15s ease, transform .05s ease;
+}
+.data-card:hover{ box-shadow: 0 6px 16px rgba(0,0,0,.08); }
+.data-card:active{ transform: translateY(1px); }
+
+/* avatar */
+.data-card .avatar{
+  width:48px; height:48px; border-radius:12px;
+  display:grid; place-items:center;
+  background: #eef6ff;
+  color:#0b6fb3;
+  border:1px solid #e6edf5;
+}
+.data-card .avatar i{ font-size:1.1rem; }
+
+/* textos */
+.data-card .title{
+  font-weight:600;
+  color:#0f172a;
+  margin-bottom:.15rem;
+}
+.data-card .subtitle{
+  color:#667085; font-size:.92rem; margin-bottom:.5rem;
+}
+
+/* chips */
+.data-card .meta{
+  display:flex; flex-wrap:wrap; gap:.5rem;
+}
+.badge{
+  display:inline-flex; align-items:center; gap:.35rem;
+  font-size:.85rem; padding:.35rem .55rem;
+  background:#f8fbff; color:#0b6fb3;
+  border:1px solid #e6edf5; border-radius:999px;
+}
+.badge i{ font-size:.85rem; }
+
+/* ações (futuro) */
+.actions{ display:flex; gap:.5rem; align-items:center; }
+.icon-btn{
+  width:36px; height:36px;
+  border:1px solid #e6edf5;
+  border-radius:10px;
+  background:#f8fbff;
+  cursor:pointer;
+}
+.icon-btn:hover{ background:#eef6ff; }
+
+/* skeleton */
+.skel.card{
+  height:100px;
+  border-radius:12px;
+  background:linear-gradient(90deg,#f2f6fb 25%,#e9f1f9 37%,#f2f6fb 63%);
+  background-size:400% 100%;
+  animation:shimmer 1.2s infinite;
+  border:1px solid #e6edf5;
+}
+@keyframes shimmer{
+  0%{ background-position:100% 0 }
+  100%{ background-position:0 0 }
+}
