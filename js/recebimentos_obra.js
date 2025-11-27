@@ -32,10 +32,12 @@ document.addEventListener('DOMContentLoaded', () => {
       .format(Number(v || 0));
 
   const dtBR = (iso) => {
-    if (!iso) return '';
-    const [y, m, d] = String(iso).split('-');
-    return `${d}/${m}/${y}`;
+    if (!iso) return '-';                       // nada informado
+    const [y, m, d] = String(iso).split('-');   // quebra
+    if (!y || !m || !d) return '-';             // inválido
+    return `${d}/${m}/${y}`;                    // ok
   };
+
 
   const validarArquivo = (file) => {
     if (!file) return { ok: true };
