@@ -2,7 +2,6 @@
 // Login - Prime Construções
 // ===============================
 
-// URL base da API (ajuste se for diferente)
 const API_URL = 'https://backendprimeconstruction-production.up.railway.app/api/login';
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -36,13 +35,23 @@ document.addEventListener('DOMContentLoaded', function () {
         throw new Error(result.error || 'Usuário ou senha inválidos.');
       }
 
-      // Salva os dados do usuário localmente
-      localStorage.setItem('usuario', JSON.stringify(result));
+      // ================================
+      // SALVA TOKEN
+      // ================================
+      localStorage.setItem('token', result.token);
+
+      // Salva dados do usuário (opcional)
+      localStorage.setItem('usuario', JSON.stringify({
+        id: result.id,
+        login: result.login,
+        nome: result.nome
+      }));
 
       loginButton.innerHTML = '<i class="fas fa-check"></i> Sucesso!';
       setTimeout(() => {
         window.location.href = 'form.html';
       }, 500);
+
     } catch (error) {
       console.error('Erro no login:', error);
       alert(error.message || 'Erro ao fazer login. Por favor, tente novamente.');
