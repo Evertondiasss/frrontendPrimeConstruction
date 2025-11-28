@@ -32,7 +32,8 @@
 
     <!-- LADO DIREITO -->
     <div class="right-side">
-      <div class="login-container">
+      <form class="login-form">
+
         <h2>Login</h2>
 
         <div class="input-group">
@@ -44,8 +45,8 @@
           <i class="fas fa-lock"></i>
           <input type="password" id="senha" placeholder="Senha" required>
         </div>
-
-        <button class="login-button" onclick="fazerLogin()">Entrar</button>
+        
+        <button class="login-button" type="submit">Entrar</button>
 
         <div class="mensagem" id="mensagem"></div>
 
@@ -58,51 +59,11 @@
         <div class="register">
           <button class="register-button">Criar conta</button>
         </div>
-      </div>
+      </form>
     </div>
 
   </div>
+<script src="js/login.js"></script>
 
-  <script>
-    async function fazerLogin() {
-      const login = document.getElementById('login').value.trim();
-      const senha = document.getElementById('senha').value.trim();
-      const msg = document.getElementById('mensagem');
-
-      if (!login || !senha) {
-        msg.textContent = "Preencha todos os campos.";
-        msg.style.color = "red";
-        return;
-      }
-
-      try {
-        const resposta = await fetch('https://backendprimeconstruction-production.up.railway.app/api/login', {
-
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username: login, password: senha })
-        });
-
-
-        const dados = await resposta.json();
-
-        if (resposta.ok) {
-            // salva o nome do usuário pra usar nas outras telas
-            localStorage.setItem("nomeUsuario", dados.nome || dados.login);
-
-            // redireciona pro painel
-            window.location.href = "form.html";
-        } else {
-            msg.textContent = dados.mensagem || "Erro ao fazer login.";
-            msg.style.color = "red";
-        }
-
-
-      } catch (erro) {
-        msg.textContent = "Erro de conexão com o servidor.";
-        msg.style.color = "red";
-      }
-    }
-  </script>
 </body>
 </html>
