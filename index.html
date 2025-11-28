@@ -4,8 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Painel de Login</title>
-  <link rel="icon" type="image/png" href="/icon-prime.png">
-  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <link rel="stylesheet" href="css/login.css">
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -32,22 +30,20 @@
 
     <!-- LADO DIREITO -->
     <div class="right-side">
-      <form class="login-form">
-
+      <div class="login-container">
         <h2>Login</h2>
 
         <div class="input-group">
           <i class="fas fa-user"></i>
-          <input type="text" name="username" placeholder="Usuário" required>
+          <input type="text" id="login" placeholder="Usuário" required>
         </div>
 
         <div class="input-group">
           <i class="fas fa-lock"></i>
-          <input type="password" name="password" placeholder="Senha" required>
+          <input type="password" id="senha" placeholder="Senha" required>
         </div>
-        
-        <button class="login-button" type="submit">Entrar</button>
 
+        <button class="login-button" onclick="fazerLogin()">Entrar</button>
 
         <div class="mensagem" id="mensagem"></div>
 
@@ -60,11 +56,51 @@
         <div class="register">
           <button class="register-button">Criar conta</button>
         </div>
-      </form>
+      </div>
     </div>
 
   </div>
-<script src="js/login.js"></script>
 
+  <script>
+    async function fazerLogin() {
+      const login = document.getElementById('login').value.trim();
+      const senha = document.getElementById('senha').value.trim();
+      const msg = document.getElementById('mensagem');
+
+      if (!login || !senha) {
+        msg.textContent = "Preencha todos os campos.";
+        msg.style.color = "red";
+        return;
+      }
+
+      try {
+        const resposta = await fetch('https://backendprimeconstruction-production.up.railway.app/api/login', {
+
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username: login, password: senha })
+        });
+
+
+        const dados = await resposta.json();
+
+        if (resposta.ok) {
+            // salva o nome do usuário pra usar nas outras telas
+            localStorage.setItem("nomeUsuario", dados.nome || dados.login);
+
+            // redireciona pro painel
+            window.location.href = "form.html";
+        } else {
+            msg.textContent = dados.mensagem || "Erro ao fazer login.";
+            msg.style.color = "red";
+        }
+
+
+      } catch (erro) {
+        msg.textContent = "Erro de conexão com o servidor.";
+        msg.style.color = "red";
+      }
+    }
+  </script>
 </body>
 </html>

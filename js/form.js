@@ -79,12 +79,6 @@ document.addEventListener('DOMContentLoaded', () => {
     .replace(/^(\d{2})(\d)/,'($1) $2')
     .replace(/(\d{5})(\d)/,'$1-$2');
 
-  function authHeader() {
-    const t = localStorage.getItem("token");
-    return { "Authorization": `Bearer ${t}` };
-  }
-
-
   // ===== Uploader (OPCIONAL)
   function setUploaderIdle() {
     if (uIdle) uIdle.hidden = false;
@@ -128,7 +122,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function carregarSelect(url, select, label, { withNovo=false } = {}) {
     select.innerHTML = `<option value="">Carregando ${label}...</option>`;
-    fetch(url, { headers: authHeader() })
+    fetch(url)
       .then(r => r.json())
       .then(data => {
         select.innerHTML = `<option value="">Selecione ${label}</option>`;
@@ -145,8 +139,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function carregarCategoriasQuick() {
     mp.cat.innerHTML = `<option value="">Carregando categorias...</option>`;
-    fetch(API_CATEGORIAS, { headers: authHeader() })
-
+    fetch(API_CATEGORIAS)
       .then(r => r.json())
       .then(data => {
         mp.cat.innerHTML = `<option value="">Selecione a categoria</option>`;
@@ -162,44 +155,18 @@ document.addEventListener('DOMContentLoaded', () => {
   // Cache de produtos
   let produtosCache = [];
   async function carregarProdutosCache() {
-    const token = localStorage.getItem("token");
-
-    try {
-      const r = await fetch(API_PRODUTOS, {
-        headers: {
-          "Authorization": `Bearer ${token}`
-        }
-      });
-
-      const data = await r.json();
-
-      if (!r.ok || !Array.isArray(data)) {
-        console.error("Erro ao carregar produtos:", data);
-        produtosCache = [];
-        return;
-      }
-
-      produtosCache = data;
-    } catch (e) {
-      console.error("Falha ao buscar produtos:", e);
-      produtosCache = [];
-    }
+    const data = await fetch(API_PRODUTOS).then(r => r.json()).catch(() => []);
+    produtosCache = data || [];
   }
-
-    function preencherSelectProduto(selectEl) {
-      selectEl.innerHTML = `<option value="">Selecione</option>`;
-      if (!Array.isArray(produtosCache)) {
-          console.warn("produtosCache não é array:", produtosCache);
-          return;
-        }
-        produtosCache.forEach(p => {
-
-        const opt = document.createElement('option');
-        opt.value = p.id;
-        opt.textContent = p.nome;
-        opt.dataset.unidadeId = p.unidade_sigla || '';
-        selectEl.appendChild(opt);
-      });
+  function preencherSelectProduto(selectEl) {
+    selectEl.innerHTML = `<option value="">Selecione</option>`;
+    produtosCache.forEach(p => {
+      const opt = document.createElement('option');
+      opt.value = p.id;
+      opt.textContent = p.nome;
+      opt.dataset.unidadeId = p.unidade_sigla || '';
+      selectEl.appendChild(opt);
+    });
     appendNovoOption(selectEl, 'produto');
   }
 
@@ -207,8 +174,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const tabela = document.getElementById('listaCompras');
     tabela.innerHTML = '<tr><td colspan="4" style="text-align:center;">Carregando...</td></tr>';
 
-      fetch(API_COMPRAS, { headers: authHeader() })
-
+    fetch(API_COMPRAS)
       .then(r => r.json())
       .then(data => {
         tabela.innerHTML = '';
@@ -244,9 +210,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Busca detalhes pelo ID (para garantir itens)
     let compra = compraLite;
     try {
-      const r = await fetch(`${API_COMPRAS}/${compraLite.id}`, {
-        headers: authHeader()
-      });
+      const r = await fetch(`${API_COMPRAS}/${compraLite.id}`);
       if (r.ok) compra = await r.json();
     } catch (_) { /* mantém lite se falhar */ }
 
@@ -421,13 +385,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const r = await fetch(API_FORNECEDORES, {
         method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          ...authHeader()
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
-
       const j = await r.json().catch(() => ({}));
       if (!r.ok) throw new Error(j?.error || 'Falha ao cadastrar fornecedor');
 
@@ -461,14 +421,9 @@ document.addEventListener('DOMContentLoaded', () => {
     mp.save.disabled = true;
     try {
       const r = await fetch(API_PRODUTOS, {
-        method:'POST',
-        headers:{
-          'Content-Type':'application/json',
-          ...authHeader()
-        },
+        method:'POST', headers:{'Content-Type':'application/json'},
         body: JSON.stringify({ nome, categoria_id })
       });
-
       const j = await r.json().catch(()=>({}));
       if (!r.ok) throw new Error(j?.error || 'Falha ao cadastrar produto');
 
@@ -602,7 +557,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const xhr = new XMLHttpRequest();
     xhr.open('POST', API_COMPRAS, true);
-    xhr.setRequestHeader("Authorization", `Bearer ${localStorage.getItem("token")}`);
 
     xhr.upload.onprogress = (e) => {
       if (e.lengthComputable) {
@@ -647,8 +601,8 @@ document.addEventListener('DOMContentLoaded', () => {
   
 
   // ===== Inicialização
-  carregarSelect(API_OBRAS, obraSelect, 'obra');
-  carregarSelect(API_FORNECEDORES, fornecedorSelect, 'fornecedor', { withNovo:true });
+  carregarSelect(API_OBRAS,        obraSelect,        'obra');
+  carregarSelect(API_FORNECEDORES, fornecedorSelect,  'fornecedor', { withNovo:true });
   carregarSelect(API_FUNCIONARIOS, funcionarioSelect, 'funcionário');
   carregarCompras();
 
