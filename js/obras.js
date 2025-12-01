@@ -2,6 +2,26 @@
 const API_OBRAS = 'https://backendprimeconstruction-production.up.railway.app/api/obras';
 const API_FUNCIONARIOS = 'https://backendprimeconstruction-production.up.railway.app/api/funcionarios';
 
+/* ===========================================================
+   AUTH FETCH – usa token + trata 401
+=========================================================== */
+async function authFetch(url, options = {}) {
+  const headers = {
+    ...(options.headers || {}),
+    ...getAuthHeaders(), // vem do auth.js
+  };
+
+  const res = await fetch(url, { ...options, headers });
+
+  if (res.status === 401) {
+    alert("Sessão expirada. Faça login novamente.");
+    logout(); // vem do auth.js
+    return;
+  }
+
+  return res;
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   // ========= DOM base =========
   const form       = document.getElementById('obraForm');
@@ -24,7 +44,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnMCancel  = document.getElementById('modalCancel');
   const btnMConfirm = document.getElementById('modalConfirm');
   if (modal) modal.hidden = true;
-  let currentAction = null; // { type: 'pausar'|'retomar'|'finalizar'|'cancelar', id:number }
+  let currentAction = null;
 
   // ========= Modal de DETALHES =========
   const viewModal = document.getElementById('viewModal');
@@ -39,7 +59,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const editValuesCancel  = document.getElementById('editValuesCancel');
   const editValuesSave    = document.getElementById('editValuesSave');
   if (editValuesModal) editValuesModal.hidden = true;
-  let editTarget = null; // { id:number, orcamento:number, valor:number }
+  let editTarget = null;
 
   // ===== Modal de STATUS (novo fluxo mobile) =====
   const statusModal      = document.getElementById('statusModal');
@@ -49,7 +69,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const statusCancel     = document.getElementById('statusCancel');
   const statusSave       = document.getElementById('statusSave');
   if (statusModal) statusModal.hidden = true;
-  let statusTarget = null; // { id:number, statusAtual:string }
+  let statusTarget = null;
 
   // ========= Helpers =========
   const brl = (v) =>
@@ -58,18 +78,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const dtBR = (data) => {
     if (!data) return '—';
-
-    // se vier no formato dd/mm/yyyy -> já está pronto
-    if (/\d{2}\/\d{2}\/\d{4}/.test(data)) {
-      return data;
-    }
-
-    // se vier no formato yyyy-mm-dd -> converte
+    if (/\d{2}\/\d{2}\/\d{4}/.test(data)) return data;
     if (/\d{4}-\d{2}-\d{2}/.test(data)) {
       const [y, m, d] = data.split('-');
       return `${d}/${m}/${y}`;
     }
-
     return '—';
   };
 
@@ -132,11 +145,9 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
       </div>
 
-      <!-- Ações visíveis apenas em desktop/hover (seus estilos podem ocultar no mobile) -->
       <div class="actions">${renderActions(o)}</div>
     `;
 
-    // Botões (desktop)
     card.querySelectorAll('.icon-btn').forEach(btn => {
       btn.addEventListener('click', (ev) => { ev.stopPropagation(); handleActionClick(btn); });
       btn.addEventListener('keydown', (ev) => {
@@ -144,18 +155,18 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     });
 
-    // Chips "tocáveis" (mobile + desktop)
     card.querySelector('.act-status')?.addEventListener('click', (ev) => {
       ev.stopPropagation(); openStatusFromCard(o);
     });
+
     card.querySelector('.act-edit-orc')?.addEventListener('click', (ev) => {
       ev.stopPropagation(); openEditValuesModal(o, 'orc');
     });
+
     card.querySelector('.act-edit-valor')?.addEventListener('click', (ev) => {
       ev.stopPropagation(); openEditValuesModal(o, 'val');
     });
 
-    // Clique no card abre detalhes
     if (viewModal && viewBody) {
       const open = () => openViewModal(o);
       card.addEventListener('click', open);
@@ -170,8 +181,8 @@ document.addEventListener('DOMContentLoaded', () => {
   // ========= API =========
   function carregarResponsaveis() {
     if (!respSelect) return;
-    fetch(API_FUNCIONARIOS)
-      .then(r => r.json())
+    authFetch(API_FUNCIONARIOS)
+      .then(r => r?.json())
       .then(data => {
         respSelect.innerHTML = '<option value="">Selecione o responsável</option>';
         (data || []).forEach(f => {
@@ -187,8 +198,8 @@ document.addEventListener('DOMContentLoaded', () => {
   function carregarObras() {
     if (!lista) return;
     showSkeleton();
-    fetch(API_OBRAS)
-      .then(r => r.json())
+    authFetch(API_OBRAS)
+      .then(r => r?.json())
       .then(data => {
         lista.innerHTML = '';
         if (!Array.isArray(data) || data.length === 0) {
@@ -201,25 +212,27 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   async function getObra(id) {
-    const r = await fetch(`${API_OBRAS}/${id}`);
+    const r = await authFetch(`${API_OBRAS}/${id}`);
     if (!r.ok) throw new Error('Falha ao obter obra');
     return r.json();
   }
 
   async function postAcaoObra(type, id, motivo) {
     const urlMap = {
-      pausar:    (i) => `/api/obras/${i}/pausar`,
-      retomar:   (i) => `/api/obras/${i}/retomar`,
-      finalizar: (i) => `/api/obras/${i}/finalizar`,
-      cancelar:  (i) => `/api/obras/${i}/cancelar`,
+      pausar:    (i) => `${API_OBRAS}/${i}/pausar`,
+      retomar:   (i) => `${API_OBRAS}/${i}/retomar`,
+      finalizar: (i) => `${API_OBRAS}/${i}/finalizar`,
+      cancelar:  (i) => `${API_OBRAS}/${i}/cancelar`,
     };
-    const url  = `http://localhost:3000${urlMap[type](id)}`;
+
     const body = (type === 'retomar') ? null : JSON.stringify({ motivo });
-    const res = await fetch(url, {
+
+    const res = await authFetch(urlMap[type](id), {
       method: 'POST',
       headers: body ? { 'Content-Type': 'application/json' } : undefined,
       body
     });
+
     const payload = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(payload?.error || 'Falha na ação');
     return payload;
@@ -241,11 +254,11 @@ document.addEventListener('DOMContentLoaded', () => {
     document.body.classList.remove('modal-open');
     currentAction = null;
   }
-  btnMCancel && btnMCancel.addEventListener('click', closeModal);
-  modal && modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
-  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && modal && !modal.hidden) closeModal(); });
 
-  btnMConfirm && btnMConfirm.addEventListener('click', async () => {
+  btnMCancel?.addEventListener('click', closeModal);
+  modal?.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+
+  btnMConfirm?.addEventListener('click', async () => {
     if (!currentAction) return;
     btnMConfirm.disabled = true;
     const motivo = (modalMotivo?.value || '').trim();
@@ -260,7 +273,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // ========= Modal EDITAR VALORES =========
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && modal && !modal.hidden) closeModal();
+  });
+
+  // ========= EDITAR VALORES =========
   function openEditValuesModal(o, focusField) {
     if (!editValuesModal) return;
     editTarget = {
@@ -268,49 +285,40 @@ document.addEventListener('DOMContentLoaded', () => {
       orcamento: Number(o.orcamento_estimado || 0),
       valor: Number(o.valor_contratual || 0),
     };
-    if (editOrcamento)  editOrcamento.value  = editTarget.orcamento;
-    if (editValorInput) editValorInput.value = editTarget.valor;
+    editOrcamento.value = editTarget.orcamento;
+    editValorInput.value = editTarget.valor;
 
     editValuesModal.hidden = false;
     document.body.classList.add('modal-open');
 
     setTimeout(() => {
-      if (focusField === 'orc' && editOrcamento)  editOrcamento.focus();
-      if (focusField === 'val' && editValorInput) editValorInput.focus();
+      if (focusField === 'orc') editOrcamento.focus();
+      if (focusField === 'val') editValorInput.focus();
     }, 50);
   }
 
   function closeEditValuesModal() {
-    if (!editValuesModal) return;
     editValuesModal.hidden = true;
     document.body.classList.remove('modal-open');
     editTarget = null;
   }
 
-  editValuesCancel && editValuesCancel.addEventListener('click', closeEditValuesModal);
-  editValuesModal && editValuesModal.addEventListener('click', (e) => {
-    if (e.target === editValuesModal) closeEditValuesModal();
-  });
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && editValuesModal && !editValuesModal.hidden) closeEditValuesModal();
-  });
+  editValuesCancel?.addEventListener('click', closeEditValuesModal);
 
-  async function salvarNovosValores() {
+  editValuesSave?.addEventListener('click', async () => {
     if (!editTarget) return;
 
-    const novoOrc = Number(String(editOrcamento?.value ?? '').trim() || '0');
-    const novoVal = Number(String(editValorInput?.value ?? '').trim() || '0');
+    const novoOrc = Number(String(editOrcamento.value).trim() || '0');
+    const novoVal = Number(String(editValorInput.value).trim() || '0');
 
     if (Number.isNaN(novoOrc) || novoOrc < 0) return alert('Orçamento inválido.');
     if (Number.isNaN(novoVal) || novoVal < 0) return alert('Valor contratual inválido.');
 
-    if (editValuesSave) {
-      editValuesSave.disabled = true;
-      editValuesSave.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvando...';
-    }
+    editValuesSave.disabled = true;
+    editValuesSave.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvando...';
 
     try {
-      const res = await fetch(`${API_OBRAS}/${editTarget.id}/valores`, {
+      const res = await authFetch(`${API_OBRAS}/${editTarget.id}/valores`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -318,57 +326,60 @@ document.addEventListener('DOMContentLoaded', () => {
           valor_contratual: novoVal
         })
       });
+
       const payload = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(payload?.error || 'Falha ao atualizar valores');
+
       alert('Valores atualizados com sucesso!');
       closeEditValuesModal();
       carregarObras();
+
     } catch (err) {
       alert(err.message || 'Erro ao atualizar valores.');
     } finally {
-      if (editValuesSave) {
-        editValuesSave.disabled = false;
-        editValuesSave.textContent = 'Salvar';
-      }
+      editValuesSave.disabled = false;
+      editValuesSave.textContent = 'Salvar';
     }
-  }
-  editValuesSave && editValuesSave.addEventListener('click', salvarNovosValores);
+  });
 
-  // ========= Modal STATUS =========
+  editValuesModal?.addEventListener('click', (e) => {
+    if (e.target === editValuesModal) closeEditValuesModal();
+  });
+
+  // ========= STATUS =========
   function openStatusFromCard(o) {
     if (!statusModal || !statusSelect) return;
     statusTarget = { id: o.id, statusAtual: o.status || 'ativa' };
     statusSelect.value = statusTarget.statusAtual;
 
     const showMotivo = (statusSelect.value === 'pausada' || statusSelect.value === 'cancelada');
-    if (statusMotivoGp) statusMotivoGp.style.display = showMotivo ? 'block' : 'none';
-    if (statusMotivo) statusMotivo.value = '';
+    statusMotivoGp.style.display = showMotivo ? 'block' : 'none';
+    statusMotivo.value = '';
 
     statusModal.hidden = false;
     document.body.classList.add('modal-open');
   }
 
   function closeStatusModal() {
-    if (!statusModal) return;
     statusModal.hidden = true;
     document.body.classList.remove('modal-open');
     statusTarget = null;
   }
 
-  statusCancel && statusCancel.addEventListener('click', closeStatusModal);
-  statusModal && statusModal.addEventListener('click', (e) => { if (e.target === statusModal) closeStatusModal(); });
-  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && statusModal && !statusModal.hidden) closeStatusModal(); });
+  statusCancel?.addEventListener('click', closeStatusModal);
+  statusModal?.addEventListener('click', (e) => { if (e.target === statusModal) closeStatusModal(); });
 
-  statusSelect && statusSelect.addEventListener('change', () => {
+  statusSelect?.addEventListener('change', () => {
     const v = statusSelect.value;
     const showMotivo = (v === 'pausada' || v === 'cancelada');
-    if (statusMotivoGp) statusMotivoGp.style.display = showMotivo ? 'block' : 'none';
+    statusMotivoGp.style.display = showMotivo ? 'block' : 'none';
   });
 
-  statusSave && statusSave.addEventListener('click', async () => {
+  statusSave?.addEventListener('click', async () => {
     if (!statusTarget) return;
-    const novo = statusSelect?.value || 'ativa';
-    const motivo = (statusMotivo?.value || '').trim();
+
+    const novo = statusSelect.value;
+    const motivo = statusMotivo.value.trim();
     const atual = statusTarget.statusAtual;
 
     try {
@@ -388,28 +399,13 @@ document.addEventListener('DOMContentLoaded', () => {
       alert('Status atualizado com sucesso!');
       closeStatusModal();
       carregarObras();
+
     } catch (err) {
       alert(err.message || 'Erro ao alterar status.');
     }
   });
 
-  // ========= Ações (desktop) =========
-  function handleActionClick(btn) {
-    const id = Number(btn.dataset.id);
-    if (!id) return;
-
-    if (btn.classList.contains('act-pausar')) {
-      openModal({ title:'Pausar obra', desc:'Tem certeza que deseja pausar esta obra? Você poderá retomar depois.', action:'pausar', id });
-    } else if (btn.classList.contains('act-retomar')) {
-      openModal({ title:'Retomar obra', desc:'Confirmar retomada desta obra?', action:'retomar', id });
-    } else if (btn.classList.contains('act-finalizar')) {
-      openModal({ title:'Finalizar obra', desc:'Confirma a finalização desta obra? A ação registra a data de conclusão.', action:'finalizar', id });
-    } else if (btn.classList.contains('act-cancelar')) {
-      openModal({ title:'Cancelar obra', desc:'Tem certeza que deseja cancelar esta obra? Informe o motivo (opcional).', action:'cancelar', id });
-    }
-  }
-
-  // ========= Modal de DETALHES =========
+  // ========= DETALHES =========
   function openViewModal(o) {
     if (!viewModal || !viewBody) return;
     viewBody.innerHTML = `
@@ -425,63 +421,64 @@ document.addEventListener('DOMContentLoaded', () => {
     viewModal.hidden = false;
     document.body.classList.add('modal-open');
   }
+
   function closeViewModal() {
-    if (!viewModal) return;
     viewModal.hidden = true;
     document.body.classList.remove('modal-open');
   }
-  viewClose && viewClose.addEventListener('click', closeViewModal);
-  viewModal && viewModal.addEventListener('click', (e) => { if (e.target === viewModal) closeViewModal(); });
-  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && viewModal && !viewModal.hidden) closeViewModal(); });
 
-  // ========= Cadastro =========
+  viewClose?.addEventListener('click', closeViewModal);
+  viewModal?.addEventListener('click', (e) => { if (e.target === viewModal) closeViewModal(); });
+
+  // ========= CADASTRAR OBRA =========
   if (form) {
-    form.addEventListener('submit', (e) => {
+    form.addEventListener('submit', async (e) => {
       e.preventDefault();
 
-      const nome               = (elNomeObra?.value || '').trim();
-      const endereco           = (elEnderecoObra?.value || '').trim();
-      const data_inicio        = (elDataInicioObra?.value || '');
-      const data_prevista      = (elDataPrevistaObra?.value || '');
-      const responsavel_id     = (respSelect?.value || '');
-      const orcamento_estimado = (elOrcamento?.value || '').trim();
-      const valor_contratual   = (elValorContratual?.value || '').trim();
+      const nome               = elNomeObra.value.trim();
+      const endereco           = elEnderecoObra.value.trim();
+      const data_inicio        = elDataInicioObra.value;
+      const data_prevista      = elDataPrevistaObra.value;
+      const responsavel_id     = respSelect.value;
+      const orcamento_estimado = elOrcamento.value.trim();
+      const valor_contratual   = elValorContratual.value.trim();
 
-      if (!nome || !endereco || !data_inicio || !data_prevista || !responsavel_id || !orcamento_estimado || !valor_contratual) {
+      if (!nome || !endereco || !data_inicio || !data_prevista || !responsavel_id ||
+          !orcamento_estimado || !valor_contratual) {
         return alert('Preencha todos os campos!');
       }
       if (Number(orcamento_estimado) < 0) return alert('Orçamento inválido.');
-      if (Number(valor_contratual) < 0 ) return alert('Valor contratual inválido');
+      if (Number(valor_contratual) < 0) return alert('Valor contratual inválido.');
 
       const btn = form.querySelector('button[type="submit"]');
-      const original = btn ? btn.textContent : '';
-      if (btn) {
-        btn.disabled = true;
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
-      }
+      const original = btn.textContent;
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
 
-      fetch(API_OBRAS, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ nome, endereco, data_inicio, data_prevista, responsavel_id, orcamento_estimado, valor_contratual })
-      })
-        .then(async r => {
-          const payload = await r.json().catch(() => ({}));
-          if (!r.ok) throw new Error(payload?.error || 'Falha ao salvar');
-          return payload;
-        })
-        .then(() => {
-          alert('Obra cadastrada com sucesso!');
-          form.reset();
-          carregarObras();
-        })
-        .catch(err => alert(err.message || 'Erro ao cadastrar obra.'))
-        .finally(() => {
-          if (btn) {
-            btn.disabled = false;
-            btn.textContent = original;
-          }
+      try {
+        const res = await authFetch(API_OBRAS, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            nome, endereco, data_inicio, data_prevista, responsavel_id,
+            orcamento_estimado, valor_contratual
+          })
         });
+
+        const payload = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(payload?.error || 'Falha ao salvar');
+
+        alert('Obra cadastrada com sucesso!');
+        form.reset();
+        carregarObras();
+
+      } catch (err) {
+        alert(err.message || 'Erro ao cadastrar obra.');
+
+      } finally {
+        btn.disabled = false;
+        btn.textContent = original;
+      }
     });
   }
 
