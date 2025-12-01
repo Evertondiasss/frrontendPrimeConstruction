@@ -6,7 +6,32 @@ const API_OBRAS         = `${API_BASE}/api/obras`;
 const MAX_FILE_BYTES = 10 * 1024 * 1024; // 10MB
 const ALLOWED_MIMES  = ['application/pdf', 'image/png', 'image/jpeg', 'image/webp'];
 
-const moedaBR = (n) => Number(n || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+// ==================================================================
+// WRAPPER DE FETCH COM TOKEN + TRATAMENTO DE 401 – OBRIGATÓRIO
+// ==================================================================
+function handleAuthError(res) {
+  if (res.status === 401) {
+    alert("Sessão expirada. Faça login novamente.");
+    logout();
+    throw new Error("Sessão expirada");
+  }
+}
+
+function authFetch(url, options = {}) {
+  options.headers = {
+    ...(options.headers || {}),
+    ...getAuthHeaders()
+  };
+  return fetch(url, options).then(res => {
+    handleAuthError(res);
+    return res;
+  });
+}
+
+// ==================================================================
+
+const moedaBR = (n) =>
+  Number(n || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
 document.addEventListener('DOMContentLoaded', () => {
   const form            = document.getElementById('recebimentoForm');
@@ -32,12 +57,11 @@ document.addEventListener('DOMContentLoaded', () => {
       .format(Number(v || 0));
 
   const dtBR = (iso) => {
-    if (!iso) return '-';                       // nada informado
-    const [y, m, d] = String(iso).split('-');   // quebra
-    if (!y || !m || !d) return '-';             // inválido
-    return `${d}/${m}/${y}`;                    // ok
+    if (!iso) return '-';
+    const [y, m, d] = String(iso).split('-');
+    if (!y || !m || !d) return '-';
+    return `${d}/${m}/${y}`;
   };
-
 
   const validarArquivo = (file) => {
     if (!file) return { ok: true };
@@ -50,12 +74,15 @@ document.addEventListener('DOMContentLoaded', () => {
     return { ok: true };
   };
 
-  // Carregar obras
+  // ==================================================================
+  // CARREGAR OBRAS
+  // ==================================================================
   async function carregarObras() {
     obraSelect.innerHTML = '<option value="">Carregando...</option>';
     try {
-      const r = await fetch(API_OBRAS);
+      const r = await authFetch(API_OBRAS);
       const data = await r.json();
+
       obraSelect.innerHTML = '<option value="">Selecione a obra</option>';
       (Array.isArray(data) ? data : []).forEach(o => {
         const opt = document.createElement('option');
@@ -68,7 +95,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // Lista (skeleton)
+  // Skeleton
   function showSkeleton() {
     lista.innerHTML = `
       <div class="skel card"></div>
@@ -77,6 +104,7 @@ document.addEventListener('DOMContentLoaded', () => {
     `;
   }
 
+  // Render card
   function renderCard(r) {
     const card = document.createElement('div');
     card.className = 'history-card';
@@ -126,16 +154,22 @@ document.addEventListener('DOMContentLoaded', () => {
     return card;
   }
 
+  // ==================================================================
+  // CARREGAR RECEBIMENTOS
+  // ==================================================================
   function carregarRecebimentos() {
     showSkeleton();
-    fetch(API_RECEBIMENTOS)
+
+    authFetch(API_RECEBIMENTOS)
       .then(r => r.json())
       .then(data => {
         lista.innerHTML = '';
+
         if (!Array.isArray(data) || data.length === 0) {
           lista.innerHTML = '<div class="state">Nenhum recebimento registrado.</div>';
           return;
         }
+
         data.forEach(r => lista.appendChild(renderCard(r)));
       })
       .catch(() => {
@@ -143,7 +177,9 @@ document.addEventListener('DOMContentLoaded', () => {
       });
   }
 
-  // Modal de visualização
+  // ==================================================================
+  // MODAL DE VISUALIZAÇÃO
+  // ==================================================================
   function openViewModal(r, linkComprovante) {
     viewBody.innerHTML = `
       <div><strong>ID:</strong> ${r.id}</div>
@@ -170,7 +206,9 @@ document.addEventListener('DOMContentLoaded', () => {
   viewModal?.addEventListener('click', e => { if (e.target === viewModal) closeViewModal(); });
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && !viewModal.hidden) closeViewModal(); });
 
-  // Modal de exclusão
+  // ==================================================================
+  // MODAL EXCLUSÃO
+  // ==================================================================
   function openDeleteModal(id) {
     deleteTarget = id;
     deleteModal.hidden = false;
@@ -183,20 +221,27 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   deleteCancel?.addEventListener('click', closeDeleteModal);
   deleteModal?.addEventListener('click', e => { if (e.target === deleteModal) closeDeleteModal(); });
+
   deleteConfirm?.addEventListener('click', async () => {
     if (!deleteTarget) return;
     try {
-      const res = await fetch(`${API_RECEBIMENTOS}/${deleteTarget}`, { method: 'DELETE' });
+      const res = await authFetch(`${API_RECEBIMENTOS}/${deleteTarget}`, {
+        method: 'DELETE'
+      });
+
       if (!res.ok) throw new Error('Falha ao excluir');
       alert('Recebimento excluído com sucesso!');
       closeDeleteModal();
       carregarRecebimentos();
+
     } catch (err) {
       alert(err.message || 'Erro ao excluir recebimento.');
     }
   });
 
-  // Submit
+  // ==================================================================
+  // SUBMIT DO FORMULÁRIO (UPLOAD)
+  // ==================================================================
   form?.addEventListener('submit', async (e) => {
     e.preventDefault();
 
@@ -231,13 +276,18 @@ document.addEventListener('DOMContentLoaded', () => {
       fd.append('observacoes', observacoes);
       if (file) fd.append('comprovante', file);
 
-      const res = await fetch(API_RECEBIMENTOS, { method: 'POST', body: fd });
+      const res = await authFetch(API_RECEBIMENTOS, {
+        method: 'POST',
+        body: fd
+      });
+
       const payload = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(payload?.error || 'Falha ao salvar recebimento.');
 
       alert('Recebimento registrado com sucesso!');
       form.reset();
       carregarRecebimentos();
+
     } catch (err) {
       alert(err.message || 'Erro ao registrar recebimento.');
     } finally {
@@ -246,7 +296,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // Init
+  // ==================================================================
+  // INIT
+  // ==================================================================
   carregarObras();
   carregarRecebimentos();
 });
