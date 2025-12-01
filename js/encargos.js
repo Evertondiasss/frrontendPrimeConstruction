@@ -1,24 +1,53 @@
-// encargos.js
+// encargos.js — protegido com authFetch
 
-const API_BASE   = 'https://backendprimeconstruction-production.up.railway.app';
-const API_OBRAS  = `${API_BASE}/api/obras`;
-const API_ENCARGOS = `${API_BASE}/api/encargos`;
+const API_BASE      = 'https://backendprimeconstruction-production.up.railway.app';
+const API_OBRAS     = `${API_BASE}/api/obras`;
+const API_ENCARGOS  = `${API_BASE}/api/encargos`;
 
-const MAX_FILE_BYTES = 10 * 1024 * 1024; // 10MB
+const MAX_FILE_BYTES = 10 * 1024 * 1024; 
 const ALLOWED_MIMES  = ['application/pdf', 'image/png', 'image/jpeg'];
 
-// Utils
+// ======================================================
+// HELPERS
+// ======================================================
 function formatarBRL(v) {
   return Number(v || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 }
+
 function validarArquivo(file) {
-  if (!file) return { ok: true }; // opcional
+  if (!file) return { ok: true };
   if (!ALLOWED_MIMES.includes(file.type)) return { ok: false, msg: 'Tipo de arquivo inválido (PDF/PNG/JPG).' };
   if (file.size > MAX_FILE_BYTES) return { ok: false, msg: 'Arquivo acima de 10MB.' };
   return { ok: true };
 }
 
+// ======================================================
+// AUTH WRAPPER
+// ======================================================
+function handleAuthError(res) {
+  if (res.status === 401) {
+    alert("Sessão expirada. Faça login novamente.");
+    logout();
+    throw new Error("Sessão expirada");
+  }
+}
+
+function authFetch(url, options = {}) {
+  options.headers = {
+    ...(options.headers || {}),
+    ...getAuthHeaders()
+  };
+  return fetch(url, options).then(res => {
+    handleAuthError(res);
+    return res;
+  });
+}
+
+// ======================================================
+// MAIN
+// ======================================================
 document.addEventListener('DOMContentLoaded', () => {
+
   const form         = document.getElementById('encargoForm');
   const lista        = document.getElementById('listaEncargos');
   const obraSelect   = document.getElementById('obraSelect');
@@ -27,10 +56,13 @@ document.addEventListener('DOMContentLoaded', () => {
   const fileInp      = document.getElementById('comprovanteEncargo');
   const atualizarBtn = document.getElementById('atualizarEncargos');
 
-  // Carrega obras (id, nome)
+  // ======================================================
+  // CARREGAR OBRAS
+  // ======================================================
   function carregarObras() {
     obraSelect.innerHTML = '<option value="">Carregando obras...</option>';
-    fetch(API_OBRAS)
+
+    authFetch(API_OBRAS)
       .then(r => r.json())
       .then(data => {
         obraSelect.innerHTML = '<option value="">Selecione a Obra</option>';
@@ -46,60 +78,63 @@ document.addEventListener('DOMContentLoaded', () => {
       });
   }
 
-  // Lista os encargos já registrados
-function carregarEncargos() {
-  lista.classList.add('history');
-  lista.innerHTML = '<li>Carregando...</li>';
+  // ======================================================
+  // LISTAR ENCARGOS
+  // ======================================================
+  function carregarEncargos() {
+    lista.classList.add('history');
+    lista.innerHTML = '<li>Carregando...</li>';
 
-  fetch(API_ENCARGOS)
-    .then(r => r.json())
-    .then(data => {
-      lista.innerHTML = '';
-      if (!Array.isArray(data) || data.length === 0) {
-        lista.innerHTML = '<li>Nenhum encargo registrado.</li>';
-        return;
-      }
+    authFetch(API_ENCARGOS)
+      .then(r => r.json())
+      .then(data => {
+        lista.innerHTML = '';
 
-      data.forEach(e => {
-        const li = document.createElement('li');
-        li.className = 'history-card';
+        if (!Array.isArray(data) || data.length === 0) {
+          lista.innerHTML = '<li>Nenhum encargo registrado.</li>';
+          return;
+        }
 
-        const id     = e.id ?? '—';
-        const obra   = e.obra_nome ?? e.obra?.nome ?? `Obra #${e.obra_id ?? '—'}`;
-        const tipo   = e.tipo ?? '—';
-        const valor  = formatarBRL(e.valor ?? e.valor_encargo);
-        const dataCr = e.criado_em || e.created_at || e.data || '';
+        data.forEach(e => {
+          const li = document.createElement('li');
+          li.className = 'history-card';
 
-        // ✅ use 'e' (não 'p')
-        const href =
-          e.comprovante_presigned                              // preferir URL assinada
-          || (e.comprovante_public || null)                    // opcional (se backend expôs)
-          || (e.comprovante_url?.startsWith('http') ? e.comprovante_url : null); // fallback absoluto
+          const id     = e.id ?? '—';
+          const obra   = e.obra_nome ?? e.obra?.nome ?? `Obra #${e.obra_id ?? '—'}`;
+          const tipo   = e.tipo ?? '—';
+          const valor  = formatarBRL(e.valor ?? e.valor_encargo);
+          const dataCr = e.criado_em || e.created_at || e.data || '';
 
-        const link = href
-          ? `<a class="link" href="${href}" target="_blank" rel="noopener"><i class="fa-solid fa-cloud-arrow-down"></i> Comprovante</a>`
-          : '';
+          const href =
+            e.comprovante_presigned ||
+            e.comprovante_public ||
+            (e.comprovante_url?.startsWith('http') ? e.comprovante_url : null);
 
-        li.innerHTML = `
-          <div class="history-head">
-            <span class="history-id">#${id}</span>
-            <span class="chip"><i class="fa-solid fa-sack-dollar"></i> ${valor}</span>
-          </div>
-          <div class="history-title">${obra}</div>
-          <div class="history-sub">Tipo: ${tipo}</div>
-          ${dataCr ? `<div class="history-meta">Registrado em: ${new Date(dataCr).toLocaleString('pt-BR')}</div>` : ''}
-          <div class="history-actions">${link}</div>
-        `;
-        lista.appendChild(li);
+          const link = href
+            ? `<a class="link" href="${href}" target="_blank" rel="noopener"><i class="fa-solid fa-cloud-arrow-down"></i> Comprovante</a>`
+            : '';
+
+          li.innerHTML = `
+            <div class="history-head">
+              <span class="history-id">#${id}</span>
+              <span class="chip"><i class="fa-solid fa-sack-dollar"></i> ${valor}</span>
+            </div>
+            <div class="history-title">${obra}</div>
+            <div class="history-sub">Tipo: ${tipo}</div>
+            ${dataCr ? `<div class="history-meta">Registrado em: ${new Date(dataCr).toLocaleString('pt-BR')}</div>` : ''}
+            <div class="history-actions">${link}</div>
+          `;
+          lista.appendChild(li);
+        });
+      })
+      .catch(() => {
+        lista.innerHTML = '<li>Erro ao carregar encargos.</li>';
       });
-    })
-    .catch(() => {
-      lista.innerHTML = '<li>Erro ao carregar encargos.</li>';
-    });
-}
+  }
 
-
-  // Submit
+  // ======================================================
+  // SUBMIT
+  // ======================================================
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
 
@@ -108,22 +143,19 @@ function carregarEncargos() {
     const valor   = valorInp.value;
     const file    = fileInp.files?.[0];
 
-    if (!obra_id || !tipo || !valor) {
-      alert('Preencha todos os campos obrigatórios!');
-      return;
-    }
-    if (Number(valor) <= 0) {
-      alert('Informe um valor válido.');
-      return;
-    }
+    if (!obra_id || !tipo || !valor)
+      return alert('Preencha todos os campos obrigatórios!');
+
+    if (Number(valor) <= 0)
+      return alert('Informe um valor válido.');
+
     const vfile = validarArquivo(file);
-    if (!vfile.ok) {
-      alert(vfile.msg);
-      return;
-    }
+    if (!vfile.ok)
+      return alert(vfile.msg);
 
     const btn = form.querySelector('button[type="submit"]');
     const original = btn.textContent;
+
     btn.disabled = true;
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
 
@@ -134,40 +166,31 @@ function carregarEncargos() {
       fd.append('valor', valor);
       if (file) fd.append('comprovante', file, file.name);
 
-      // logs de diagnóstico (remova em produção)
-      console.log('fileInp.files:', fileInp.files);
-      console.log('file selecionado:', file);
-      for (const [k, v] of fd.entries()) {
-        console.log('FD ->', k, v instanceof File ? { name: v.name, type: v.type, size: v.size } : v);
-      }
-
-      const r = await fetch(API_ENCARGOS, {
+      const r = await authFetch(API_ENCARGOS, {
         method: 'POST',
-        body: fd, // não setar Content-Type manualmente
+        body: fd
       });
 
       if (!r.ok) {
-        let msg = 'Erro ao registrar encargo.';
-        try {
-          const j = await r.json();
-          if (j?.error) msg = j.error;
-        } catch {}
-        throw new Error(msg);
+        const j = await r.json().catch(() => ({}));
+        throw new Error(j.error || 'Erro ao registrar encargo.');
       }
 
-      await r.json();
       alert('Encargo registrado com sucesso!');
       form.reset();
       carregarEncargos();
+
     } catch (err) {
       alert(err.message || 'Erro ao registrar encargo.');
-    } finally {
-      btn.disabled = false;
-      btn.textContent = original;
     }
+
+    btn.disabled = false;
+    btn.textContent = original;
   });
 
-  // Init
+  // ======================================================
+  // INIT
+  // ======================================================
   atualizarBtn?.addEventListener('click', carregarEncargos);
   carregarObras();
   carregarEncargos();
