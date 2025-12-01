@@ -75,32 +75,32 @@
 
       try {
         const resposta = await fetch('https://backendprimeconstruction-production.up.railway.app/api/login', {
-
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username: login, password: senha })
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username: login, password: senha })
         });
-
 
         const dados = await resposta.json();
 
         if (resposta.ok) {
-            // salva o nome do usuário pra usar nas outras telas
-            localStorage.setItem("nomeUsuario", dados.nome || dados.login);
+          // salva token e usuário
+          localStorage.setItem("token", dados.token);
+          localStorage.setItem("nomeUsuario", dados.user?.nome || dados.user?.login || "");
 
-            // redireciona pro painel
-            window.location.href = "form.html";
+          // marca início da atividade
+          localStorage.setItem("lastActivity", Date.now().toString());
+
+          window.location.href = "form.html";
         } else {
-            msg.textContent = dados.mensagem || "Erro ao fazer login.";
-            msg.style.color = "red";
+          msg.textContent = dados.error || "Erro ao fazer login.";
+          msg.style.color = "red";
         }
-
-
       } catch (erro) {
         msg.textContent = "Erro de conexão com o servidor.";
         msg.style.color = "red";
       }
     }
-  </script>
+</script>
+
 </body>
 </html>

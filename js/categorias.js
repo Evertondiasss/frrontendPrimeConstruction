@@ -4,6 +4,15 @@ document.addEventListener('DOMContentLoaded', () => {
   const form  = document.getElementById('categoriaForm');
   const lista = document.getElementById('listaCategorias');
 
+  // detecta sessão expirada (401)
+  function handleAuthError(response) {
+    if (response.status === 401) {
+      alert('Sessão expirada. Faça login novamente.');
+      logout(); // função global do auth.js
+      throw new Error("Sessão expirada");
+    }
+  }
+
   // skeleton
   function showSkeleton(){
     lista.innerHTML = `
@@ -26,27 +35,34 @@ document.addEventListener('DOMContentLoaded', () => {
         <div class="subtitle">ID: #${c.id}</div>
         <div class="meta">
           <span class="badge"><i class="fa-solid fa-folder-tree"></i> Categoria</span>
-          <!-- espaço para métricas futuras, ex.: qtd. de produtos -->
         </div>
       </div>
-      <div class="actions">
-        <!-- Botões futuros (editar/excluir) -->
-        <!-- <button class="icon-btn" title="Editar"><i class="fa-solid fa-pen"></i></button> -->
-      </div>
+      <div class="actions"></div>
     `;
     return card;
   }
 
+  // carregar categorias
   function carregar(){
     showSkeleton();
-    fetch(API_BASE)
-      .then(r => r.json())
+
+    fetch(API_BASE, {
+      headers: {
+        ...getAuthHeaders() // envia token JWT
+      }
+    })
+      .then(response => {
+        handleAuthError(response);
+        return response.json();
+      })
       .then(data => {
         lista.innerHTML = '';
-        if (!Array.isArray(data) || data.length === 0){
+
+        if (!Array.isArray(data) || data.length === 0) {
           lista.innerHTML = '<div class="state">Nenhuma categoria cadastrada.</div>';
           return;
         }
+
         data.forEach(c => lista.appendChild(renderCard(c)));
       })
       .catch(() => {
@@ -54,6 +70,7 @@ document.addEventListener('DOMContentLoaded', () => {
       });
   }
 
+  // cadastrar categoria
   form.addEventListener('submit', (e) => {
     e.preventDefault();
     const nome = document.getElementById('nomeCategoria').value.trim();
@@ -66,12 +83,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
     fetch(API_BASE, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        ...getAuthHeaders() // token no POST também
+      },
       body: JSON.stringify({ nome })
     })
-      .then(async r => {
-        const body = await r.json().catch(()=>({}));
-        if (!r.ok) throw new Error(body?.error || 'Erro ao cadastrar categoria.');
+      .then(async response => {
+        handleAuthError(response);
+
+        const body = await response.json().catch(() => ({}));
+
+        if (!response.ok)
+          throw new Error(body?.error || 'Erro ao cadastrar categoria.');
+
         return body;
       })
       .then(() => {
@@ -79,8 +104,13 @@ document.addEventListener('DOMContentLoaded', () => {
         form.reset();
         carregar();
       })
-      .catch(err => alert(err.message || 'Erro ao cadastrar categoria (nome pode já existir).'))
-      .finally(() => { btn.disabled = false; btn.textContent = original; });
+      .catch(err => {
+        alert(err.message || 'Erro ao cadastrar categoria.');
+      })
+      .finally(() => {
+        btn.disabled = false;
+        btn.textContent = original;
+      });
   });
 
   carregar();
