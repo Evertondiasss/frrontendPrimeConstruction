@@ -269,6 +269,13 @@ document.addEventListener('DOMContentLoaded', () => {
           const dataPg = p.data_pagamento || '—';
           const val = formatarBRL(p.valor_pago);
 
+          const link = p.comprovante_url
+            ? `<a class="link" href="${p.comprovante_url}" target="_blank" rel="noopener">
+                <i class="fa-solid fa-cloud-arrow-down"></i> Comprovante
+              </a>`
+            : '';
+
+
           li.innerHTML = `
             <div class="history-head">
               <span>#${p.id}</span>
@@ -277,6 +284,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <div class="history-title">${nome}</div>
             <div class="history-sub">CPF: ${cpf} • Cargo: ${cargo}</div>
             <div class="history-meta">Competência: ${comp} • Pago: ${dataPg}</div>
+            <div class="history-actions">${link}</div>
           `;
 
           li.onclick = () => abrirModalPagamento(p.id);
