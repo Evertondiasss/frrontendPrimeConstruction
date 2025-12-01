@@ -1,6 +1,27 @@
 // fornecedores.js
 const API_BASE = 'https://backendprimeconstruction-production.up.railway.app/api/fornecedores';
 
+// --- Função padrão para lidar com 401 ---
+function handleAuthError(res) {
+  if (res.status === 401) {
+    alert("Sessão expirada. Faça login novamente.");
+    logout();
+    throw new Error("Sessão expirada");
+  }
+}
+
+// --- Wrapper de fetch com token ---
+function authFetch(url, options = {}) {
+  options.headers = {
+    ...(options.headers || {}),
+    ...getAuthHeaders()
+  };
+  return fetch(url, options).then(res => {
+    handleAuthError(res);
+    return res;
+  });
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   const form  = document.getElementById('fornecedorForm');
   const lista = document.getElementById('listaFornecedores');
@@ -36,7 +57,7 @@ document.addEventListener('DOMContentLoaded', () => {
       <div class="skel card"></div>
     `;
 
-    fetch(API_BASE)
+    authFetch(API_BASE)
       .then(r => r.json())
       .then(data => {
         lista.innerHTML = '';
@@ -46,7 +67,6 @@ document.addEventListener('DOMContentLoaded', () => {
           return;
         }
 
-        // Helpers locais para máscaras tolerantes a vazio
         const maskCNPJ = v => (v ? formataCNPJ(v) : null);
         const maskTel  = v => {
           if (!v) return null;
@@ -56,7 +76,6 @@ document.addEventListener('DOMContentLoaded', () => {
           return v;
         };
 
-        // Montagem dos cards
         data.forEach(f => {
           const card = document.createElement('div');
           card.className = 'data-card';
@@ -109,10 +128,15 @@ document.addEventListener('DOMContentLoaded', () => {
     btn.disabled = true;
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
 
-    fetch(API_BASE, {
+    authFetch(API_BASE, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ nome, cnpj, endereco: endereco || null, telefone })
+      body: JSON.stringify({
+        nome,
+        cnpj,
+        endereco: endereco || null,
+        telefone
+      })
     })
       .then(async r => {
         const body = await r.json().catch(() => ({}));
