@@ -343,12 +343,12 @@ setUploaderIdle();
 
   // ====== MODAL DETALHES ======
   // ====== MODAL DETALHES (substitua pela versão abaixo) ======
+// ====== MODAL DETALHES (substitua a função existente por esta) ======
 async function abrirModalCompra(compraLite) {
   const modal = document.getElementById('modalCompra');
   const conteudo = document.getElementById('modalCompraConteudo');
 
   let compra = compraLite;
-
   try {
     const r = await authFetch(`${API_COMPRAS}/${compraLite.id}`);
     compra = await r.json();
@@ -361,11 +361,11 @@ async function abrirModalCompra(compraLite) {
       <td>${it.produto_nome || it.nome || '-'}</td>
       <td style="text-align:right;">${it.quantidade ?? '-'}</td>
       <td style="text-align:right;">${brl(it.valor_unit || it.precoUnit || 0)}</td>
-      <td style="text-align:right;">${brl(( (it.quantidade||0) * (it.valor_unit || it.precoUnit || 0) ))}</td>
+      <td style="text-align:right;">${brl(((it.quantidade||0) * (it.valor_unit || it.precoUnit || 0)))}</td>
     </tr>
   `).join('');
 
-  // tenta vários nomes possíveis que a API pode ter retornado
+  // possíveis nomes de campo onde o backend colocou a URL
   const comprovanteUrl =
     compra.comprovante_url ||
     compra.comprovante ||
@@ -376,9 +376,7 @@ async function abrirModalCompra(compraLite) {
     compra.anexo_url ||
     null;
 
-  // util para escapar URL simples
-  function esc(u) { try { return encodeURI(String(u)); } catch(e) { return String(u); } }
-
+  // montar o bloco do comprovante sem re-encoding
   let comprovanteHtml = `<p><strong>Comprovante:</strong> —</p>`;
   if (comprovanteUrl) {
     const url = String(comprovanteUrl).trim();
@@ -387,31 +385,56 @@ async function abrirModalCompra(compraLite) {
     const isPdf = /\.pdf(\?.*)?$/.test(lower);
     const fileName = url.split('/').pop().split('?')[0];
 
+    // criar DOM em vez de template string para evitar double-encoding
+    const container = document.createElement('div');
+    const p = document.createElement('p');
+    p.innerHTML = '<strong>Comprovante:</strong> ';
+    const a = document.createElement('a');
+    a.href = url; // <<--- SEM encodeURI/encodeURIComponent
+    a.target = '_blank';
+    a.rel = 'noopener';
+    a.textContent = isPdf ? 'Abrir PDF' : 'Abrir em nova aba';
+    p.appendChild(a);
+    container.appendChild(p);
+
     if (isImage) {
-      comprovanteHtml = `
-        <p><strong>Comprovante:</strong> <a href="${esc(url)}" target="_blank" rel="noopener">Abrir em nova aba</a></p>
-        <div style="margin-top:.5rem;">
-          <a href="${esc(url)}" target="_blank" rel="noopener">
-            <img src="${esc(url)}" alt="Comprovante" style="width:100%;max-width:320px;border-radius:6px;border:1px solid #e6ecf3;" />
-          </a>
-          <div style="margin-top:.25rem;color:#666;font-size:.9rem">${fileName}</div>
-        </div>
-      `;
-    } else if (isPdf) {
-      comprovanteHtml = `
-        <p><strong>Comprovante:</strong>
-          <a href="${esc(url)}" target="_blank" rel="noopener">Abrir PDF</a>
-          <small style="display:block;color:#666;margin-top:.25rem">${fileName}</small>
-        </p>
-      `;
+      const wrap = document.createElement('div');
+      wrap.style.marginTop = '.5rem';
+
+      const linkImg = document.createElement('a');
+      linkImg.href = url;
+      linkImg.target = '_blank';
+      linkImg.rel = 'noopener';
+
+      const img = document.createElement('img');
+      img.src = url; // <<--- SEM encodeURI
+      img.alt = 'Comprovante';
+      img.style.width = '100%';
+      img.style.maxWidth = '320px';
+      img.style.borderRadius = '6px';
+      img.style.border = '1px solid #e6ecf3';
+
+      linkImg.appendChild(img);
+      wrap.appendChild(linkImg);
+
+      const fn = document.createElement('div');
+      fn.style.marginTop = '.25rem';
+      fn.style.color = '#666';
+      fn.style.fontSize = '.9rem';
+      fn.textContent = fileName;
+      wrap.appendChild(fn);
+
+      container.appendChild(wrap);
     } else {
-      comprovanteHtml = `
-        <p><strong>Comprovante:</strong>
-          <a href="${esc(url)}" target="_blank" rel="noopener">Abrir arquivo</a>
-          <small style="display:block;color:#666;margin-top:.25rem">${fileName}</small>
-        </p>
-      `;
+      const fn = document.createElement('div');
+      fn.style.marginTop = '.25rem';
+      fn.style.color = '#666';
+      fn.style.fontSize = '.9rem';
+      fn.textContent = fileName;
+      container.appendChild(fn);
     }
+
+    comprovanteHtml = container.outerHTML;
   }
 
   conteudo.innerHTML = `
@@ -440,6 +463,7 @@ async function abrirModalCompra(compraLite) {
   modal.hidden = false;
   document.body.classList.add('modal-open');
 }
+
 
 
   document.getElementById('fecharModalCompra').addEventListener('click', () => {
