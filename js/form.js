@@ -85,6 +85,42 @@ document.addEventListener('DOMContentLoaded', () => {
     .replace(/^(\d{2})(\d)/,'($1) $2')
     .replace(/(\d{5})(\d)/,'$1-$2');
 
+    // --- Uploader: wiring (cole dentro do DOMContentLoaded, depois das consts do uploader) ---
+  if (btnPickIdle) btnPickIdle.addEventListener('click', () => fileInput.click());
+  if (btnPick)     btnPick.addEventListener('click', () => fileInput.click());
+
+  if (fileInput) {
+    fileInput.addEventListener('change', (ev) => {
+      const file = ev.target.files?.[0] || null;
+      const err = validateFileOptional(file);
+      if (err) {
+        // mostra erro e limpa
+        if (uBadge) { uBadge.textContent = err; uBadge.className = 'u-badge error'; }
+        fileInput.value = '';
+        setUploaderIdle();
+        return;
+      }
+      if (file) {
+        setUploaderFile(file);
+        if (uBadge) { uBadge.textContent = 'Arquivo selecionado'; uBadge.className = 'u-badge ok'; }
+      } else {
+        setUploaderIdle();
+      }
+    });
+  }
+
+if (btnRemove) {
+  btnRemove.addEventListener('click', () => {
+    fileInput.value = '';
+    setUploaderIdle();
+    if (uBadge) { uBadge.textContent = ''; uBadge.className = 'u-badge'; }
+  });
+}
+
+// Se quiser iniciar com estado consistente (opcional)
+setUploaderIdle();
+
+
   // ----- Uploader -----
   function setUploaderIdle() {
     if (uIdle) uIdle.hidden = false;
