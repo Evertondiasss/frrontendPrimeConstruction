@@ -344,6 +344,7 @@ setUploaderIdle();
   // ====== MODAL DETALHES ======
   // ====== MODAL DETALHES (substitua pela versão abaixo) ======
 // ====== MODAL DETALHES (substitua a função existente por esta) ======
+// ====== MODAL DETALHES (somente link, sem preview) ======
 async function abrirModalCompra(compraLite) {
   const modal = document.getElementById('modalCompra');
   const conteudo = document.getElementById('modalCompraConteudo');
@@ -365,84 +366,23 @@ async function abrirModalCompra(compraLite) {
     </tr>
   `).join('');
 
-  // possíveis nomes de campo onde o backend colocou a URL
-  const comprovanteUrl =
-    compra.comprovante_url ||
-    compra.comprovante ||
-    compra.comprovantePath ||
-    compra.comprovante_path ||
-    compra.comprovante_s3_url ||
-    compra.s3_url ||
-    compra.anexo_url ||
-    null;
+  const url = compra.comprovante_url || null;
 
-  // montar o bloco do comprovante sem re-encoding
   let comprovanteHtml = `<p><strong>Comprovante:</strong> —</p>`;
-  if (comprovanteUrl) {
-    const url = String(comprovanteUrl).trim();
-    const lower = url.toLowerCase();
-    const isImage = /\.(png|jpe?g|gif|webp)(\?.*)?$/.test(lower);
-    const isPdf = /\.pdf(\?.*)?$/.test(lower);
-    const fileName = url.split('/').pop().split('?')[0];
-
-    // criar DOM em vez de template string para evitar double-encoding
-    const container = document.createElement('div');
-    const p = document.createElement('p');
-    p.innerHTML = '<strong>Comprovante:</strong> ';
-    const a = document.createElement('a');
-    a.href = url; // <<--- SEM encodeURI/encodeURIComponent
-    a.target = '_blank';
-    a.rel = 'noopener';
-    a.textContent = isPdf ? 'Abrir PDF' : 'Abrir em nova aba';
-    p.appendChild(a);
-    container.appendChild(p);
-
-    if (isImage) {
-      const wrap = document.createElement('div');
-      wrap.style.marginTop = '.5rem';
-
-      const linkImg = document.createElement('a');
-      linkImg.href = url;
-      linkImg.target = '_blank';
-      linkImg.rel = 'noopener';
-
-      const img = document.createElement('img');
-      img.src = url; // <<--- SEM encodeURI
-      img.alt = 'Comprovante';
-      img.style.width = '100%';
-      img.style.maxWidth = '320px';
-      img.style.borderRadius = '6px';
-      img.style.border = '1px solid #e6ecf3';
-
-      linkImg.appendChild(img);
-      wrap.appendChild(linkImg);
-
-      const fn = document.createElement('div');
-      fn.style.marginTop = '.25rem';
-      fn.style.color = '#666';
-      fn.style.fontSize = '.9rem';
-      fn.textContent = fileName;
-      wrap.appendChild(fn);
-
-      container.appendChild(wrap);
-    } else {
-      const fn = document.createElement('div');
-      fn.style.marginTop = '.25rem';
-      fn.style.color = '#666';
-      fn.style.fontSize = '.9rem';
-      fn.textContent = fileName;
-      container.appendChild(fn);
-    }
-
-    comprovanteHtml = container.outerHTML;
+  if (url) {
+    comprovanteHtml = `
+      <p><strong>Comprovante:</strong>
+        <a href="${url}" target="_blank" rel="noopener">Abrir comprovante</a>
+      </p>
+    `;
   }
 
   conteudo.innerHTML = `
-    <p><strong>Obra:</strong> ${compra.obra_nome || compra.obra || '-'}</p>
-    <p><strong>Fornecedor:</strong> ${compra.fornecedor_nome || compra.fornecedor || '-'}</p>
-    <p><strong>Funcionário:</strong> ${compra.funcionario_nome || compra.funcionario || '-'}</p>
+    <p><strong>Obra:</strong> ${compra.obra_nome}</p>
+    <p><strong>Fornecedor:</strong> ${compra.fornecedor_nome}</p>
+    <p><strong>Funcionário:</strong> ${compra.funcionario_nome}</p>
     <p><strong>Data Compra:</strong> ${dtBR(compra.data_compra)}</p>
-    <p><strong>Total:</strong> ${brl(compra.total_liquido || compra.valor_total || 0)}</p>
+    <p><strong>Total:</strong> ${brl(compra.total_liquido || 0)}</p>
 
     ${comprovanteHtml}
 
@@ -451,11 +391,15 @@ async function abrirModalCompra(compraLite) {
         ? `
           <table style="width:100%;border-collapse:collapse;margin-top:.8rem;">
             <thead>
-              <tr><th style="text-align:left">Produto</th><th style="text-align:right">Qtd</th><th style="text-align:right">Unit</th><th style="text-align:right">Parcial</th></tr>
+              <tr>
+                <th style="text-align:left">Produto</th>
+                <th style="text-align:right">Qtd</th>
+                <th style="text-align:right">Unit</th>
+                <th style="text-align:right">Parcial</th>
+              </tr>
             </thead>
             <tbody>${linhas}</tbody>
-          </table>
-          `
+          </table>`
         : '<p>Nenhum item</p>'
     }
   `;
@@ -463,6 +407,7 @@ async function abrirModalCompra(compraLite) {
   modal.hidden = false;
   document.body.classList.add('modal-open');
 }
+
 
 
 
