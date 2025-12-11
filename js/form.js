@@ -405,6 +405,19 @@ document.addEventListener('DOMContentLoaded', () => {
     calcTotais();
   }
 
+  // ====== REMOVER ITEM ======
+  itensTable.addEventListener('click', (ev) => {
+    const btn = ev.target.closest('.item-remove');
+    if (!btn) return;
+
+    const row = btn.closest('tr');
+    if (!row) return;
+
+    row.remove();
+    calcTotais();
+  });
+
+
   addItemBtn.addEventListener('click', () => addItemRow());
   descontoTotI.addEventListener('input', calcTotais);
 
