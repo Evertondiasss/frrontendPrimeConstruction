@@ -190,6 +190,94 @@ document.addEventListener('DOMContentLoaded', () => {
       });
   }
 
+  // ====== FIX: Modal Novo Produto ======
+(function() {
+  const modal = document.getElementById('modalProduto');
+  if (!modal) return;
+
+  const inpNome   = document.getElementById('np_nome');
+  const selCat    = document.getElementById('np_categoria');
+  const btnCancel = document.getElementById('np_cancel');
+  const btnSave   = document.getElementById('np_save');
+
+  // força tipo button (caso HTML mude)
+  if (btnCancel) btnCancel.type = 'button';
+  if (btnSave)   btnSave.type   = 'button';
+
+  function close() {
+    modal.hidden = true;
+    if (inpNome) inpNome.value = '';
+    if (selCat)  selCat.value = '';
+  }
+
+  // cancelar
+  if (btnCancel) btnCancel.addEventListener('click', (ev) => {
+    ev.preventDefault();
+    close();
+  });
+
+  // cadastrar
+  if (btnSave) btnSave.addEventListener('click', async (ev) => {
+    ev.preventDefault();
+
+    const nome = (inpNome?.value || '').trim();
+    const categoriaId = selCat?.value;
+
+    if (!nome) { alert('Informe o nome do produto.'); return; }
+    if (!categoriaId) { alert('Selecione a categoria.'); return; }
+
+    try {
+      btnSave.disabled = true;
+      const original = btnSave.textContent;
+      btnSave.textContent = 'Cadastrando...';
+
+      // payload — ajuste se sua API esperar outro nome de campo
+      const payload = { nome, categoria_id: Number(categoriaId) };
+
+      const r = await authFetch(API_PRODUTOS, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      if (r.status === 401) { alert('Sessão expirada.'); logout(); return; }
+      if (!(r.status >= 200 && r.status < 300)) {
+        const err = await r.json().catch(()=>({}));
+        alert(err.error || 'Erro ao cadastrar produto.');
+        return;
+      }
+
+      const novo = await r.json();
+
+      // atualiza cache e todos os selects .item-produto
+      produtosCache.push(novo);
+      document.querySelectorAll('.item-produto').forEach(sel => {
+        const opt = document.createElement('option');
+        opt.value = novo.id;
+        opt.textContent = novo.nome;
+        const novoOpt = Array.from(sel.options).find(o => o.value === '__new__');
+        if (novoOpt) sel.insertBefore(opt, novoOpt);
+        else sel.appendChild(opt);
+      });
+
+      alert('Produto cadastrado.');
+      close();
+    } catch (err) {
+      console.error('Erro ao cadastrar produto', err);
+      alert('Erro de conexão ao cadastrar produto.');
+    } finally {
+      btnSave.disabled = false;
+      btnSave.textContent = 'Cadastrar';
+    }
+  });
+
+  // fechar clicando fora do modal
+  modal.addEventListener('click', (ev) => {
+    if (ev.target === modal) close();
+  });
+})();
+
+
   // ====== MODAL DETALHES ======
   async function abrirModalCompra(compraLite) {
     const modal = document.getElementById('modalCompra');
