@@ -190,7 +190,7 @@ document.addEventListener('DOMContentLoaded', () => {
       });
   }
 
-  // ====== FIX: Modal Novo Produto ======
+  // ====== FIX MELHORADO: Modal Novo Produto com seleção automática ======
 (function() {
   const modal = document.getElementById('modalProduto');
   if (!modal) return;
@@ -200,26 +200,36 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnCancel = document.getElementById('np_cancel');
   const btnSave   = document.getElementById('np_save');
 
-  // força tipo button (caso HTML mude)
   if (btnCancel) btnCancel.type = 'button';
   if (btnSave)   btnSave.type   = 'button';
+
+  // guarda o select que pediu "novo produto"
+  let lastRequester = null;
+
+  // intercepta todas as mudanças que abrem o modal (existem vários selects .item-produto)
+  // e marca o seletor que originou a ação.
+  document.addEventListener('change', (ev) => {
+    const t = ev.target;
+    if (t && t.classList && t.classList.contains('item-produto') && t.value === '__new__') {
+      lastRequester = t;            // guarda referência
+      t.value = '';                 // limpa a seleção
+      // carrega categorias para modal (já fazia isso em addItemRow, mas reforça)
+      carregarSelect(API_CATEGORIAS, selCat, 'categoria');
+      modal.hidden = false;
+    }
+  });
 
   function close() {
     modal.hidden = true;
     if (inpNome) inpNome.value = '';
     if (selCat)  selCat.value = '';
+    lastRequester = null;
   }
 
-  // cancelar
-  if (btnCancel) btnCancel.addEventListener('click', (ev) => {
-    ev.preventDefault();
-    close();
-  });
+  if (btnCancel) btnCancel.addEventListener('click', (ev) => { ev.preventDefault(); close(); });
 
-  // cadastrar
   if (btnSave) btnSave.addEventListener('click', async (ev) => {
     ev.preventDefault();
-
     const nome = (inpNome?.value || '').trim();
     const categoriaId = selCat?.value;
 
@@ -231,7 +241,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const original = btnSave.textContent;
       btnSave.textContent = 'Cadastrando...';
 
-      // payload — ajuste se sua API esperar outro nome de campo
+      // ajuste payload conforme sua API
       const payload = { nome, categoria_id: Number(categoriaId) };
 
       const r = await authFetch(API_PRODUTOS, {
@@ -247,18 +257,41 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
 
-      const novo = await r.json();
+      const novoRaw = await r.json();
 
-      // atualiza cache e todos os selects .item-produto
+      // Normaliza retorno: aceita {id, nome} ou {id, name} etc.
+      const novo = {
+        id: novoRaw.id ?? novoRaw.insertId ?? novoRaw.ID ?? null,
+        nome: novoRaw.nome ?? novoRaw.name ?? novoRaw.nome_produto ?? ''
+      };
+
+      if (!novo.id) {
+        console.warn('Resposta da API sem id:', novoRaw);
+        alert('Produto cadastrado, mas resposta da API inesperada. Verifique no console.');
+      }
+
+      // atualiza cache (guarda objeto raw também se quiser)
       produtosCache.push(novo);
+
+      // cria option para todos os selects .item-produto
       document.querySelectorAll('.item-produto').forEach(sel => {
+        // evita criar duplicatas (se já existir opção com mesmo value)
+        if (novo.id && Array.from(sel.options).some(o => String(o.value) === String(novo.id))) return;
+
         const opt = document.createElement('option');
-        opt.value = novo.id;
-        opt.textContent = novo.nome;
+        opt.value = novo.id ?? '';
+        opt.textContent = (novo.nome && novo.nome.trim()) ? novo.nome : (`Produto #${novo.id ?? ''}`);
         const novoOpt = Array.from(sel.options).find(o => o.value === '__new__');
         if (novoOpt) sel.insertBefore(opt, novoOpt);
         else sel.appendChild(opt);
       });
+
+      // se souber quem abriu o modal, seleciona o novo produto lá
+      if (lastRequester && novo.id) {
+        lastRequester.value = novo.id;
+        // dispara evento change para disparar possíveis listeners que dependem da seleção
+        lastRequester.dispatchEvent(new Event('change', { bubbles: true }));
+      }
 
       alert('Produto cadastrado.');
       close();
@@ -271,11 +304,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // fechar clicando fora do modal
-  modal.addEventListener('click', (ev) => {
-    if (ev.target === modal) close();
-  });
+  // fechar clicando fora
+  modal.addEventListener('click', (ev) => { if (ev.target === modal) close(); });
 })();
+
 
 
   // ====== MODAL DETALHES ======
