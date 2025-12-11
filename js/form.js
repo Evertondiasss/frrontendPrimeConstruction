@@ -342,51 +342,105 @@ setUploaderIdle();
 
 
   // ====== MODAL DETALHES ======
-  async function abrirModalCompra(compraLite) {
-    const modal = document.getElementById('modalCompra');
-    const conteudo = document.getElementById('modalCompraConteudo');
+  // ====== MODAL DETALHES (substitua pela versão abaixo) ======
+async function abrirModalCompra(compraLite) {
+  const modal = document.getElementById('modalCompra');
+  const conteudo = document.getElementById('modalCompraConteudo');
 
-    let compra = compraLite;
+  let compra = compraLite;
 
-    try {
-      const r = await authFetch(`${API_COMPRAS}/${compraLite.id}`);
-      compra = await r.json();
-    } catch (_) {}
+  try {
+    const r = await authFetch(`${API_COMPRAS}/${compraLite.id}`);
+    compra = await r.json();
+  } catch (_) {}
 
-    const itens = compra.itens || compra.items || [];
+  const itens = compra.itens || compra.items || [];
 
-    const linhas = itens.map(it => `
-      <tr>
-        <td>${it.produto_nome || it.nome}</td>
-        <td style="text-align:right;">${it.quantidade}</td>
-        <td style="text-align:right;">${brl(it.valor_unit || it.precoUnit)}</td>
-        <td style="text-align:right;">${brl((it.quantidade * (it.valor_unit || it.precoUnit)))}</td>
-      </tr>
-    `).join('');
+  const linhas = itens.map(it => `
+    <tr>
+      <td>${it.produto_nome || it.nome || '-'}</td>
+      <td style="text-align:right;">${it.quantidade ?? '-'}</td>
+      <td style="text-align:right;">${brl(it.valor_unit || it.precoUnit || 0)}</td>
+      <td style="text-align:right;">${brl(( (it.quantidade||0) * (it.valor_unit || it.precoUnit || 0) ))}</td>
+    </tr>
+  `).join('');
 
-    conteudo.innerHTML = `
-      <p><strong>Obra:</strong> ${compra.obra_nome}</p>
-      <p><strong>Fornecedor:</strong> ${compra.fornecedor_nome}</p>
-      <p><strong>Funcionário:</strong> ${compra.funcionario_nome}</p>
-      <p><strong>Data Compra:</strong> ${dtBR(compra.data_compra)}</p>
-      <p><strong>Total:</strong> ${brl(compra.total_liquido || compra.valor_total)}</p>
-      ${
-        itens.length
-          ? `
-            <table style="width:100%;border-collapse:collapse;margin-top:.8rem;">
-              <thead>
-                <tr><th>Produto</th><th>Qtd</th><th>Unit</th><th>Parcial</th></tr>
-              </thead>
-              <tbody>${linhas}</tbody>
-            </table>
-            `
-          : '<p>Nenhum item</p>'
-      }
-    `;
+  // tenta vários nomes possíveis que a API pode ter retornado
+  const comprovanteUrl =
+    compra.comprovante_url ||
+    compra.comprovante ||
+    compra.comprovantePath ||
+    compra.comprovante_path ||
+    compra.comprovante_s3_url ||
+    compra.s3_url ||
+    compra.anexo_url ||
+    null;
 
-    modal.hidden = false;
-    document.body.classList.add('modal-open');
+  // util para escapar URL simples
+  function esc(u) { try { return encodeURI(String(u)); } catch(e) { return String(u); } }
+
+  let comprovanteHtml = `<p><strong>Comprovante:</strong> —</p>`;
+  if (comprovanteUrl) {
+    const url = String(comprovanteUrl).trim();
+    const lower = url.toLowerCase();
+    const isImage = /\.(png|jpe?g|gif|webp)(\?.*)?$/.test(lower);
+    const isPdf = /\.pdf(\?.*)?$/.test(lower);
+    const fileName = url.split('/').pop().split('?')[0];
+
+    if (isImage) {
+      comprovanteHtml = `
+        <p><strong>Comprovante:</strong> <a href="${esc(url)}" target="_blank" rel="noopener">Abrir em nova aba</a></p>
+        <div style="margin-top:.5rem;">
+          <a href="${esc(url)}" target="_blank" rel="noopener">
+            <img src="${esc(url)}" alt="Comprovante" style="width:100%;max-width:320px;border-radius:6px;border:1px solid #e6ecf3;" />
+          </a>
+          <div style="margin-top:.25rem;color:#666;font-size:.9rem">${fileName}</div>
+        </div>
+      `;
+    } else if (isPdf) {
+      comprovanteHtml = `
+        <p><strong>Comprovante:</strong>
+          <a href="${esc(url)}" target="_blank" rel="noopener">Abrir PDF</a>
+          <small style="display:block;color:#666;margin-top:.25rem">${fileName}</small>
+        </p>
+      `;
+    } else {
+      comprovanteHtml = `
+        <p><strong>Comprovante:</strong>
+          <a href="${esc(url)}" target="_blank" rel="noopener">Abrir arquivo</a>
+          <small style="display:block;color:#666;margin-top:.25rem">${fileName}</small>
+        </p>
+      `;
+    }
   }
+
+  conteudo.innerHTML = `
+    <p><strong>Obra:</strong> ${compra.obra_nome || compra.obra || '-'}</p>
+    <p><strong>Fornecedor:</strong> ${compra.fornecedor_nome || compra.fornecedor || '-'}</p>
+    <p><strong>Funcionário:</strong> ${compra.funcionario_nome || compra.funcionario || '-'}</p>
+    <p><strong>Data Compra:</strong> ${dtBR(compra.data_compra)}</p>
+    <p><strong>Total:</strong> ${brl(compra.total_liquido || compra.valor_total || 0)}</p>
+
+    ${comprovanteHtml}
+
+    ${
+      itens.length
+        ? `
+          <table style="width:100%;border-collapse:collapse;margin-top:.8rem;">
+            <thead>
+              <tr><th style="text-align:left">Produto</th><th style="text-align:right">Qtd</th><th style="text-align:right">Unit</th><th style="text-align:right">Parcial</th></tr>
+            </thead>
+            <tbody>${linhas}</tbody>
+          </table>
+          `
+        : '<p>Nenhum item</p>'
+    }
+  `;
+
+  modal.hidden = false;
+  document.body.classList.add('modal-open');
+}
+
 
   document.getElementById('fecharModalCompra').addEventListener('click', () => {
     document.getElementById('modalCompra').hidden = true;
