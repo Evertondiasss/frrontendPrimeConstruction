@@ -241,7 +241,6 @@ document.addEventListener('DOMContentLoaded', () => {
       const original = btnSave.textContent;
       btnSave.textContent = 'Cadastrando...';
 
-      // ajuste payload conforme sua API
       const payload = { nome, categoria_id: Number(categoriaId) };
 
       const r = await authFetch(API_PRODUTOS, {
@@ -259,37 +258,32 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const novoRaw = await r.json();
 
-      // Normaliza retorno: aceita {id, nome} ou {id, name} etc.
+      // Normaliza retorno: usa o nome enviado se a API não devolver o nome.
       const novo = {
         id: novoRaw.id ?? novoRaw.insertId ?? novoRaw.ID ?? null,
-        nome: novoRaw.nome ?? novoRaw.name ?? novoRaw.nome_produto ?? ''
+        nome: (novoRaw.nome ?? novoRaw.name ?? novoRaw.nome_produto ?? '').toString().trim() || nome
       };
 
       if (!novo.id) {
         console.warn('Resposta da API sem id:', novoRaw);
-        alert('Produto cadastrado, mas resposta da API inesperada. Verifique no console.');
+        // mesmo sem id, criamos uma option com value vazio para não quebrar a UI
       }
 
-      // atualiza cache (guarda objeto raw também se quiser)
       produtosCache.push(novo);
 
-      // cria option para todos os selects .item-produto
       document.querySelectorAll('.item-produto').forEach(sel => {
-        // evita criar duplicatas (se já existir opção com mesmo value)
         if (novo.id && Array.from(sel.options).some(o => String(o.value) === String(novo.id))) return;
 
         const opt = document.createElement('option');
         opt.value = novo.id ?? '';
-        opt.textContent = (novo.nome && novo.nome.trim()) ? novo.nome : (`Produto #${novo.id ?? ''}`);
+        opt.textContent = novo.nome || (`Produto #${novo.id ?? ''}`);
         const novoOpt = Array.from(sel.options).find(o => o.value === '__new__');
         if (novoOpt) sel.insertBefore(opt, novoOpt);
         else sel.appendChild(opt);
       });
 
-      // se souber quem abriu o modal, seleciona o novo produto lá
       if (lastRequester && novo.id) {
         lastRequester.value = novo.id;
-        // dispara evento change para disparar possíveis listeners que dependem da seleção
         lastRequester.dispatchEvent(new Event('change', { bubbles: true }));
       }
 
@@ -303,6 +297,7 @@ document.addEventListener('DOMContentLoaded', () => {
       btnSave.textContent = 'Cadastrar';
     }
   });
+
 
   // fechar clicando fora
   modal.addEventListener('click', (ev) => { if (ev.target === modal) close(); });
