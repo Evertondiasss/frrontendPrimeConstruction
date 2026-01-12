@@ -645,6 +645,9 @@ async function abrirModalCompra(compraLite) {
           fornecedorSelect.querySelector('option[value="__new__"]')
         );
         fornecedorSelect.value = novo.id;
+        fornecedorSelect.dispatchEvent(new Event('change', { bubbles: true }));
+        fornecedorSelect.blur();
+        fornecedorSelect.focus();
 
         close();
         alert('Fornecedor cadastrado.');
