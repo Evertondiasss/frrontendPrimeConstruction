@@ -576,6 +576,91 @@ async function abrirModalCompra(compraLite) {
         document.getElementById('modalFornecedor').hidden = false;
       }
     });
+    // ===== MODAL NOVO FORNECEDOR =====
+  (function () {
+    const modal = document.getElementById('modalFornecedor');
+    if (!modal) return;
+
+    const inpNome = document.getElementById('nf_nome');
+    const inpCnpj = document.getElementById('nf_cnpj');
+    const inpTel  = document.getElementById('nf_telefone');
+    const inpEnd  = document.getElementById('nf_endereco');
+
+    const btnSave   = document.getElementById('nf_save');
+    const btnCancel = document.getElementById('nf_cancel');
+
+    btnSave.type = 'button';
+    btnCancel.type = 'button';
+
+    function close() {
+      modal.hidden = true;
+      inpNome.value = '';
+      inpCnpj.value = '';
+      inpTel.value  = '';
+      inpEnd.value  = '';
+    }
+
+    btnCancel.addEventListener('click', close);
+
+    btnSave.addEventListener('click', async (e) => {
+      e.preventDefault();
+      const nome = inpNome.value.trim();
+      if (!nome) {
+        alert('Informe o nome do fornecedor.');
+        return;
+      }
+
+      const payload = {
+        nome,
+        cnpj: inpCnpj.value.trim(),
+        telefone: inpTel.value.trim(),
+        endereco: inpEnd.value.trim()
+      };
+
+      try {
+        btnSave.disabled = true;
+        btnSave.textContent = 'Cadastrando...';
+
+        const r = await authFetch(API_FORNECEDORES, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        if (!r.ok) {
+          const err = await r.json().catch(() => ({}));
+          alert(err.error || 'Erro ao cadastrar fornecedor.');
+          console.error('Erro API fornecedor:', err);
+          return;
+        }
+
+        const novo = await r.json();
+
+        // adiciona no select e seleciona
+        const opt = document.createElement('option');
+        opt.value = novo.id;
+        opt.textContent = novo.nome;
+        fornecedorSelect.insertBefore(
+          opt,
+          fornecedorSelect.querySelector('option[value="__new__"]')
+        );
+        fornecedorSelect.value = novo.id;
+
+        close();
+        alert('Fornecedor cadastrado.');
+      } catch (e) {
+        alert('Erro de conexão.');
+      } finally {
+        btnSave.disabled = false;
+        btnSave.textContent = 'Cadastrar';
+      }
+    });
+
+    modal.addEventListener('click', e => {
+      if (e.target === modal) close();
+    });
+  })();
+
   carregarSelect(API_FUNCIONARIOS, funcionarioSelect, "funcionário");
   carregarCompras();
 
