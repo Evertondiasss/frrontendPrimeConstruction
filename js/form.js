@@ -583,8 +583,8 @@ async function abrirModalCompra(compraLite) {
 
     const inpNome = document.getElementById('nf_nome');
     const inpCnpj = document.getElementById('nf_cnpj');
-    const inpTel  = document.getElementById('nf_telefone');
-    const inpEnd  = document.getElementById('nf_endereco');
+    const inpTel  = document.getElementById('nf_tel');
+    const inpEnd  = document.getElementById('nf_end');
 
     const btnSave   = document.getElementById('nf_save');
     const btnCancel = document.getElementById('nf_cancel');
@@ -612,9 +612,9 @@ async function abrirModalCompra(compraLite) {
 
       const payload = {
         nome,
-        cnpj: inpCnpj.value.trim(),
-        telefone: inpTel.value.trim(),
-        endereco: inpEnd.value.trim()
+        cnpj: inpCnpj.value.trim() || "",
+        telefone: inpTel.value.trim() || "",
+        endereco: inpEnd.value.trim() || ""
       };
 
       try {
