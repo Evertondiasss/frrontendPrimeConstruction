@@ -143,11 +143,21 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!r.ok) throw new Error(body?.error || 'Falha ao salvar.');
         return body;
       })
-      .then(() => {
+      .then((body) => {
         alert('Fornecedor cadastrado com sucesso!');
-        form.reset();
-        carregar();
-      })
+
+        // dispara evento global com dados do fornecedor criado
+        window.dispatchEvent(new CustomEvent('fornecedor:criado', {
+          detail: {
+            id: body.id,
+            nome
+          }
+        }));
+
+  form.reset();
+  carregar();
+})
+
       .catch(err => {
         alert(err.message || 'Erro ao cadastrar fornecedor.');
       })

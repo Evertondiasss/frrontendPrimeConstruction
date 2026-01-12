@@ -569,6 +569,13 @@ async function abrirModalCompra(compraLite) {
   // ===== INIT =====
   carregarSelect(API_OBRAS, obraSelect, "obra");
   carregarSelect(API_FORNECEDORES, fornecedorSelect, "fornecedor", { withNovo:true });
+
+    fornecedorSelect.addEventListener('change', () => {
+      if (fornecedorSelect.value === '__new__') {
+        fornecedorSelect.value = '';
+        document.getElementById('modalFornecedor').hidden = false;
+      }
+    });
   carregarSelect(API_FUNCIONARIOS, funcionarioSelect, "funcionário");
   carregarCompras();
 
