@@ -66,7 +66,7 @@ async function fetchDashboardData(filtros = {}) {
 // Busca lista de obras para o select
 async function fetchObras() {
     try {
-        const response = await authfetch(`${API_BASE_URL}/api/obras`);
+        const response = await authFetch(`${API_BASE_URL}/api/obras`);
         if (!response.ok) {
             throw new Error('Erro ao buscar obras');
         }
