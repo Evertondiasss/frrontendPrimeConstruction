@@ -1,6 +1,26 @@
 // URL base da sua API Node (ajuste se estiver em outra porta/domínio)
 const API_BASE_URL = 'https://backendprimeconstruction-production.up.railway.app';
 
+function authFetch(url, options = {}) {
+    const token = localStorage.getItem('token');
+
+    return fetch(url, {
+        ...options,
+        headers: {
+            ...(options.headers || {}),
+            Authorization: `Bearer ${token}`
+        }
+    }).then(response => {
+        if (response.status === 401) {
+            alert('Sessão expirada. Faça login novamente.');
+            logout(); // vem do auth.js
+            throw new Error('Não autorizado');
+        }
+        return response;
+    });
+}
+
+
 // Estado global dos filtros
 let filtrosAtuais = {
     mes: '',
@@ -29,7 +49,7 @@ async function fetchDashboardData(filtros = {}) {
             obra: filtros.obra || ''
         });
 
-        const response = await fetch(`${API_BASE_URL}/api/dashboard?${params.toString()}`);
+        const response = await authFetch(`${API_BASE_URL}/api/dashboard?${params.toString()}`);
         if (!response.ok) {
             const txt = await response.text();
             throw new Error(`Erro ao buscar dados do dashboard: ${response.status} - ${txt}`);
@@ -46,7 +66,7 @@ async function fetchDashboardData(filtros = {}) {
 // Busca lista de obras para o select
 async function fetchObras() {
     try {
-        const response = await fetch(`${API_BASE_URL}/api/obras`);
+        const response = await authfetch(`${API_BASE_URL}/api/obras`);
         if (!response.ok) {
             throw new Error('Erro ao buscar obras');
         }
