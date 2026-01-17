@@ -634,12 +634,33 @@ async function abrirModalCompra(compraLite) {
           return;
         }
 
-        const novo = await r.json();
+        const novoRaw = await r.json();
 
-        // adiciona no select e seleciona
+        const novo = {
+          id: novoRaw.id ?? novoRaw.insertId ?? novoRaw.ID ?? null,
+          nome: (novoRaw.nome ?? novoRaw.name ?? '').toString().trim() || nome
+        };
+
+        if (!novo.id) {
+          console.warn('Resposta da API sem id:', novoRaw);
+        }
+
+        // adiciona no select antes do "+ Novo fornecedor"
         const opt = document.createElement('option');
         opt.value = novo.id;
         opt.textContent = novo.nome;
+
+        const optNovo = fornecedorSelect.querySelector('option[value="__new__"]');
+        if (optNovo) {
+          fornecedorSelect.insertBefore(opt, optNovo);
+        } else {
+          fornecedorSelect.appendChild(opt);
+        }
+
+        // seleciona automaticamente
+        fornecedorSelect.value = novo.id;
+        fornecedorSelect.dispatchEvent(new Event('change', { bubbles: true }));
+
         fornecedorSelect.insertBefore(
           opt,
           fornecedorSelect.querySelector('option[value="__new__"]')
